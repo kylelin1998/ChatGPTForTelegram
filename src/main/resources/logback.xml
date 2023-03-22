@@ -1,0 +1,94 @@
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+
+    <!-- 定义变量 -->
+    <property name="LOG_HOME" value="./logs" />
+    <property name="APP_NAME" value="ChatGPTForTelegram"/>
+
+    <contextName>${APP_NAME}</contextName>
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="utf-8">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 滚动文件输出 -->
+    <appender name="FILE-INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 指定日志文件的名称 -->
+        <file>${LOG_HOME}/${APP_NAME}/info.log</file>
+
+        <!-- 配置追加写入 -->
+        <append>true</append>
+
+        <!-- 级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <!-- 滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 滚动文件名称  -->
+            <fileNamePattern>${LOG_HOME}/${APP_NAME}/notInfo-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!-- 可选节点，控制保留的归档文件的最大数量，超出数量就删除旧文件。
+                注意，删除旧文件时， 那些为了归档而创建的目录也会被删除。 -->
+            <MaxHistory>50</MaxHistory>
+            <!-- 当日志文件超过maxFileSize指定的大小时，根据上面提到的%i进行日志文件滚动 -->
+            <maxFileSize>2MB</maxFileSize>
+            <!-- 设置文件总大小 -->
+            <totalSizeCap>20MB</totalSizeCap>
+        </rollingPolicy>
+
+        <!-- 日志输出格式-->
+        <encoder charset="utf-8">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 滚动文件输出 -->
+    <appender name="FILE-ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 指定日志文件的名称 -->
+        <file>${LOG_HOME}/${APP_NAME}/error.log</file>
+
+        <!-- 配置追加写入 -->
+        <append>true</append>
+
+        <!-- 级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <!-- 滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 滚动文件名称  -->
+            <fileNamePattern>${LOG_HOME}/${APP_NAME}/notError-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!-- 可选节点，控制保留的归档文件的最大数量，超出数量就删除旧文件。
+                注意，删除旧文件时， 那些为了归档而创建的目录也会被删除。 -->
+            <MaxHistory>50</MaxHistory>
+            <!-- 当日志文件超过maxFileSize指定的大小时，根据上面提到的%i进行日志文件滚动 -->
+            <maxFileSize>2MB</maxFileSize>
+            <!-- 设置文件总大小 -->
+            <totalSizeCap>20MB</totalSizeCap>
+        </rollingPolicy>
+
+        <!-- 日志输出格式-->
+        <encoder charset="utf-8">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 解决debug模式下循环发送的问题 -->
+    <logger name="org.apache.http.impl.conn.Wire" level="WARN" />
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE-INFO" />
+        <appender-ref ref="FILE-ERROR" />
+    </root>
+</configuration>
