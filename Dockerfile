@@ -1,6 +1,5 @@
-FROM elderbyte/docker-alpine-jdk8-ffmpeg
+FROM openjdk:8-jdk-alpine
 ENV TZ=Asia/Shanghai
-RUN apk add --no-cache ffmpeg
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 # 增加字体，解决验证码没有字体报空指针问题
