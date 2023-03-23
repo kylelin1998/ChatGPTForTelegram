@@ -33,6 +33,8 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         register(new ChatShorterCommand());
         register(new AskCommand());
         register(new AskShorterCommand());
+        register(new ChatMsgLimitCommand());
+        register(new NoneContextChatCommand());
         register(new ImageCommand());
         register(new ExitCommand());
         register(new LanguageCommand());
@@ -58,12 +60,12 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
 
         CallbackQuery callbackQuery = update.getCallbackQuery();
         if (null != callbackQuery) {
-            StepsChatSession session = StepsChatSessionBuilder
-                    .create(callbackQuery)
-                    .build();
-
             String data = callbackQuery.getData();
             StepsCenter.CallbackData callbackData = StepsCenter.parseCallbackData(data);
+            StepsChatSession session = StepsChatSessionBuilder
+                    .create(callbackQuery)
+                    .setText(callbackData.getText())
+                    .build();
 
             if (!session.getSessionId().equals(String.valueOf(callbackData.getId()))) {
                 return;
