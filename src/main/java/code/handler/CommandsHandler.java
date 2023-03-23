@@ -1,6 +1,8 @@
 package code.handler;
 
 import code.commands.*;
+import code.handler.steps.StepsChatSession;
+import code.handler.steps.StepsChatSessionBuilder;
 import code.handler.steps.StepsSession;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,8 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
     public void start() {
         register(new ChatCommand());
         register(new ChatShorterCommand());
+        register(new AskCommand());
+        register(new AskShorterCommand());
         register(new ImageCommand());
         register(new ExitCommand());
         register(new LanguageCommand());
@@ -54,17 +58,19 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
 
         CallbackQuery callbackQuery = update.getCallbackQuery();
         if (null != callbackQuery) {
-            String chatId = String.valueOf(callbackQuery.getMessage().getChat().getId());
-            String fromId = String.valueOf(callbackQuery.getFrom().getId());
-            String data = callbackQuery.getData();
-            StepsCentre.CallbackData callbackData = StepsCentre.parseCallbackData(data);
+            StepsChatSession session = StepsChatSessionBuilder
+                    .create(callbackQuery)
+                    .build();
 
-            if (!(StepsSession.buildNewChatId(chatId, fromId)).equals(String.valueOf(callbackData.getId()))) {
+            String data = callbackQuery.getData();
+            StepsCenter.CallbackData callbackData = StepsCenter.parseCallbackData(data);
+
+            if (!session.getSessionId().equals(String.valueOf(callbackData.getId()))) {
                 return;
             }
 
             if (StringUtils.isNotBlank(data)) {
-                StepsCentre.cmdHandle(callbackData.getCommand(), true, chatId, fromId, callbackQuery.getMessage(), callbackData.getText());
+                StepsCenter.cmdHandle(callbackData.getCommand(), true, session);
                 return;
             }
         }
@@ -73,14 +79,11 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         if (null == message) {
             return;
         }
-        String chatId = message.getChat().getId().toString();
-        String fromId = String.valueOf(message.getFrom().getId());
-
         String text = message.getText();
         if (StringUtils.isNotEmpty(text)) {
-            boolean handle = StepsCentre.cmdHandle(chatId, fromId, message, text);
+            boolean handle = StepsCenter.cmdHandle(StepsChatSessionBuilder.create(message).build());
             if (!handle) {
-                StepsCentre.textHandle(chatId, fromId, message, text);
+                StepsCenter.textHandle(StepsChatSessionBuilder.create(message).build());
             }
         }
     }

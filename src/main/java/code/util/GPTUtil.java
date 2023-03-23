@@ -43,7 +43,7 @@ public class GPTUtil {
                     .setHeader("Authorization", "Bearer " + Token)
                     .bodyString(JSON.toJSONString(parameter), ContentType.APPLICATION_JSON)
                     .connectTimeout(Timeout.ofSeconds(30))
-                    .responseTimeout(Timeout.ofMinutes(5));
+                    .responseTimeout(Timeout.ofSeconds(30));
             requestProxyConfig.viaProxy(request);
             Response response = request.execute();
 
@@ -74,16 +74,14 @@ public class GPTUtil {
                     .setHeader("accept", "text/event-stream")
                     .bodyString(JSON.toJSONString(parameter), org.apache.hc.core5.http.ContentType.APPLICATION_JSON)
                     .connectTimeout(Timeout.ofSeconds(30))
-                    .responseTimeout(Timeout.ofMinutes(5))
+                    .responseTimeout(Timeout.ofSeconds(30))
                     ;
             requestProxyConfig.viaProxy(request);
             Response response = request.execute();
 
-            chatResponse.setStatusCode(chatResponse.getStatusCode());
-
             StringBuilder builder = new StringBuilder();
-            response.handleResponse((classicHttpResponse) -> {
-//                System.out.println(JSON.toJSONString(classicHttpResponse));
+            int code = response.handleResponse((classicHttpResponse) -> {
+//                log.info(JSON.toJSONString(classicHttpResponse));
 
                 InputStream inputStream = classicHttpResponse.getEntity().getContent();
 
@@ -91,6 +89,7 @@ public class GPTUtil {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                         String line = null;
                         while((line = reader.readLine()) != null) {
+//                            log.info(line);
                             String s = StringUtils.substringAfter(line, "data: ");
                             if (StringUtils.isNotEmpty(s)) {
                                 if ("[DONE]".equals(s)) {
@@ -114,8 +113,10 @@ public class GPTUtil {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
                 }
 
-                return null;
+                return classicHttpResponse.getCode();
             });
+
+            chatResponse.setStatusCode(code);
 
             String s = builder.toString();
             chatResponse.setOk(StringUtils.isNotEmpty(s));

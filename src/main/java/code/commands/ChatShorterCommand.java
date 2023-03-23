@@ -1,7 +1,8 @@
 package code.commands;
 
-import code.handler.StepsCentre;
+import code.handler.StepsCenter;
 import code.handler.Command;
+import code.handler.steps.StepsChatSessionBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class ChatShorterCommand extends BotCommand {
     public ChatShorterCommand() {
-        super("c", "");
+        super(Command.ChatShorter.getCmd(), "");
     }
 
     @Override
@@ -24,10 +25,7 @@ public class ChatShorterCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        String chatId = String.valueOf(message.getChat().getId());
-        String fromId = String.valueOf(message.getFrom().getId());
-
-        StepsCentre.cmdHandle(Command.ChatShorter, false, chatId, fromId, message, Stream.of(arguments).collect(Collectors.joining(" ")));
+        StepsCenter.cmdHandle(Command.ChatShorter, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
     }
 
     @Override

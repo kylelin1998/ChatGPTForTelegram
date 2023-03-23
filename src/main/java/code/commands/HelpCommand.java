@@ -19,9 +19,7 @@ public class HelpCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        ExecutorsConfig.submit(() -> {
-            String chatId = String.valueOf(chat.getId());
-            MessageHandle.sendMessage(chatId, HelpText, false);
-        });
+        String chatId = String.valueOf(chat.getId());
+        MessageHandle.sendMessage(chatId, HelpText, false);
     }
 }

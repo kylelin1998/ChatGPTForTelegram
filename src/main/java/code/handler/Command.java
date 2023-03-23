@@ -7,6 +7,10 @@ public enum Command {
 
     Chat("chat"),
     ChatShorter("c"),
+    Ask("ask"),
+    AskShorter("a"),
+    ChatMsgLimit("cml"),
+    NoneContextChatMessage("nccm"),
     Exit("exit"),
     Image("image"),
 

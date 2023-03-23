@@ -1,7 +1,7 @@
 package code.commands;
 
-import code.handler.StepsCenter;
 import code.handler.Command;
+import code.handler.StepsCenter;
 import code.handler.steps.StepsChatSessionBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
@@ -11,9 +11,9 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 @Slf4j
-public class ImageCommand extends BotCommand {
-    public ImageCommand() {
-        super(Command.Image.getCmd(), "");
+public class AskShorterCommand extends BotCommand {
+    public AskShorterCommand() {
+        super(Command.AskShorter.getCmd(), "");
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ImageCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        StepsCenter.cmdHandle(Command.Image, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
+        StepsCenter.cmdHandle(Command.AskShorter, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
     }
 
     @Override

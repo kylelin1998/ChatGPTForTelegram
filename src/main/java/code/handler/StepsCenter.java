@@ -1,12 +1,11 @@
 package code.handler;
 
 import code.config.ExecutorsConfig;
+import code.handler.steps.StepsChatSession;
 import code.handler.steps.StepsHandler;
 import code.handler.steps.StepsRegisterCenter;
-import code.handler.steps.StepsSession;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
 
 import static code.Main.GlobalConfig;
 
-public class StepsCentre {
+public class StepsCenter {
 
     @Data
     public static class CallbackData {
@@ -23,9 +22,9 @@ public class StepsCentre {
         private String text;
     }
 
-    public static String buildCallbackData(String chatId, String fromId, Command command, String text) {
+    public static String buildCallbackData(StepsChatSession session, Command command, String text) {
         StringBuilder builder = new StringBuilder();
-        builder.append("f[" + StepsSession.buildNewChatId(chatId, fromId) + "]");
+        builder.append("f[" + session.getSessionId() + "]");
         builder.append(command.getCmd());
         builder.append(" ");
         builder.append(text);
@@ -44,16 +43,21 @@ public class StepsCentre {
         return data;
     }
 
-    public static boolean cmdHandle(String chatId, String fromId, Message message, String text) {
-        if (StringUtils.isNotBlank(text) && text.startsWith("/")) {
-            String s = StringUtils.remove(text, "/");
+    public static boolean cmdHandle(StepsChatSession session) {
+        if (StringUtils.isNotBlank(session.getText()) && session.getText().startsWith("/")) {
+            String s = StringUtils.remove(session.getText(), "/");
             String[] split = s.split(" ");
             if (split.length > 0) {
                 String cmd = split[0];
                 cmd = StringUtils.replace(cmd, "@" + GlobalConfig.getBotName(), "");
                 if (Command.exist(cmd)) {
                     split[0] = cmd;
-                    cmdHandle(Command.toCmd(cmd), false, chatId, fromId, message, Stream.of(split).skip(1).collect(Collectors.joining(" ")));
+                    session.setText(Stream.of(split).skip(1).collect(Collectors.joining(" ")));
+                    cmdHandle(
+                            Command.toCmd(cmd),
+                            false,
+                            session
+                    );
                     return true;
                 }
             }
@@ -61,43 +65,43 @@ public class StepsCentre {
         return false;
     }
 
-    public static void cmdHandle(Command command, boolean isCall, String chatId, String fromId, Message message, String text) {
+    public static void cmdHandle(Command command, boolean isCall, StepsChatSession stepsChatSession) {
         boolean permission = false;
         for (String s : GlobalConfig.getPermissionChatIdArray()) {
-            if (s.equals(chatId) || s.equals(fromId)) {
+            if (s.equals(stepsChatSession.getChatId()) || s.equals(stepsChatSession.getFromId())) {
                 permission = true;
                 break;
             }
         }
         if (!permission) {
-            MessageHandle.sendMessage(chatId, message.getMessageId(), "程序目前内测中， 不进行开放！", false);
+            MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "程序目前内测中， 不进行开放！", false);
             return;
         }
 
         ExecutorsConfig.submit(() -> {
             StepsHandler handler = StepsRegisterCenter.getRegister(command.getCmd());
-            if (null != handler.getInitStep() && !handler.hasInit(chatId, fromId) && !isCall) {
-                handler.init(chatId, fromId, message.getMessageId(), text);
+            if (null != handler.getInitStep() && !handler.hasInit(stepsChatSession) && !isCall) {
+                handler.init(stepsChatSession);
             } else {
-                handler.step(chatId, fromId, message.getMessageId(), text);
+                handler.step(stepsChatSession);
             }
         });
     }
 
-    public static void textHandle(String chatId, String fromId, Message message, String text) {
-        StepsHandler handler = StepsRegisterCenter.getPriority(chatId, fromId);
+    public static void textHandle(StepsChatSession stepsChatSession) {
+        StepsHandler handler = StepsRegisterCenter.getPriority(stepsChatSession);
         if (null == handler) {
             return;
         }
         ExecutorsConfig.submit(() -> {
-            handler.step(chatId, fromId, message.getMessageId(), text);
+            handler.step(stepsChatSession);
         });
     }
 
-    public static void exit(String chatId, String fromId) {
+    public static void exit(StepsChatSession stepsChatSession) {
         Collection<StepsHandler> list = StepsRegisterCenter.getRegisterList();
         for (StepsHandler handler : list) {
-            handler.exit(chatId, fromId);
+            handler.exit(stepsChatSession);
         }
     }
 

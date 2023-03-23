@@ -1,8 +1,8 @@
 package code.commands;
 
-import code.config.ExecutorsConfig;
-import code.handler.StepsCentre;
+import code.handler.StepsCenter;
 import code.handler.Command;
+import code.handler.steps.StepsChatSessionBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -10,13 +10,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Slf4j
 public class ExitCommand extends BotCommand {
     public ExitCommand() {
-        super("exit", "");
+        super(Command.Exit.getCmd(), "");
     }
 
     @Override
@@ -25,12 +22,7 @@ public class ExitCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        ExecutorsConfig.submit(() -> {
-            String chatId = String.valueOf(message.getChat().getId());
-            String fromId = String.valueOf(message.getFrom().getId());
-
-            StepsCentre.cmdHandle(Command.Exit, false, chatId, fromId, message, Stream.of(arguments).collect(Collectors.joining(" ")));
-        });
+        StepsCenter.cmdHandle(Command.Exit, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
     }
 
     @Override

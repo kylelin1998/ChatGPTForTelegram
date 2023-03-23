@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface StepHandleApi {
 
-    StepResult execute(String chatId, String fromId, Integer replyToMessageId, String text, int index, List<String> list, Map<String, Object> context);
+    StepResult execute(StepsChatSession stepsChatSession, int index, List<String> list, Map<String, Object> context);
 
 }

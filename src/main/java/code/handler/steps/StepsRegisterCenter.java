@@ -23,15 +23,15 @@ public class StepsRegisterCenter {
         return stepsHandlerMap.values();
     }
 
-    public synchronized static void priority(String chatId, String fromId, StepsHandler stepsHandler) {
+    public synchronized static void priority(StepsChatSession stepsChatSession, StepsHandler stepsHandler) {
         for (StepsHandler value : stepsHandlerMap.values()) {
-            value.exit(chatId, fromId);
+            value.exit(stepsChatSession);
         }
 
-        priorityMap.put(StepsSession.buildNewChatId(chatId, fromId), stepsHandler);
+        priorityMap.put(stepsChatSession.getSessionId(), stepsHandler);
     }
-    public static StepsHandler getPriority(String chatId, String fromId) {
-        return priorityMap.get(StepsSession.buildNewChatId(chatId, fromId));
+    public static StepsHandler getPriority(StepsChatSession stepsChatSession) {
+        return priorityMap.get(stepsChatSession.getSessionId());
     }
 
 

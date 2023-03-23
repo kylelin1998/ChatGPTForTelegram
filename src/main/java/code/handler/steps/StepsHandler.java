@@ -56,118 +56,121 @@ public class StepsHandler {
         return handler;
     }
 
-    public boolean hasInit(String chatId, String fromId) {
-        return stepId.containsKey(StepsSession.buildNewChatId(chatId, fromId));
+    public boolean hasInit(StepsChatSession stepsChatSession) {
+        return stepId.containsKey(stepsChatSession.getSessionId());
     }
     public boolean isInit() {
         return null != initStep;
     }
 
-    public void init(String chatId, String fromId, Integer replyToMessageId, String text) {
-        StepsRegisterCenter.priority(chatId, fromId, this);
+    public void init(StepsChatSession stepsChatSession) {
+        StepsRegisterCenter.priority(stepsChatSession, this);
+        String sessionId = stepsChatSession.getSessionId();
 
-        Boolean stepsWorkStatusBool = stepWorkStatus.get(StepsSession.buildNewChatId(chatId, fromId));
+        Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
         if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
             return;
         }
 
-        stepWorkStatus.put(StepsSession.buildNewChatId(chatId, fromId), true);
+        stepWorkStatus.put(sessionId, true);
 
         StepResult execute = null;
         try {
             List<String> list = Collections.synchronizedList(new ArrayList<>());
             ConcurrentHashMap<String, Object> contextMap = new ConcurrentHashMap<>();
             if (null != initStep) {
-                execute = initStep.execute(chatId, fromId, replyToMessageId, text, 0, list, contextMap);
+                execute = initStep.execute(stepsChatSession, 0, list, contextMap);
             }
             if ((null != execute && execute.isOk()) || null == initStep) {
-                context.remove(StepsSession.buildNewChatId(chatId, fromId));
-                message.remove(StepsSession.buildNewChatId(chatId, fromId));
-                stepId.remove(StepsSession.buildNewChatId(chatId, fromId));
-                list.add(text);
-                message.put(StepsSession.buildNewChatId(chatId, fromId), list);
-                context.put(StepsSession.buildNewChatId(chatId, fromId), contextMap);
-                stepId.put(StepsSession.buildNewChatId(chatId, fromId), IdAtomic.incrementAndGet());
+                context.remove(sessionId);
+                message.remove(sessionId);
+                stepId.remove(sessionId);
+                list.add(stepsChatSession.getText());
+                message.put(sessionId, list);
+                context.put(sessionId, contextMap);
+                stepId.put(sessionId, IdAtomic.incrementAndGet());
                 if (debug) {
-                    log.info("Steps init, id: {}, chat id: {}, text: {}, list: {}", stepId.get(StepsSession.buildNewChatId(chatId, fromId)), chatId, text, JSON.toJSONString(list));
+                    log.info("Steps init, id: {}, chat id: {}, text: {}, list: {}", stepId.get(sessionId), stepsChatSession.getChatId(), stepsChatSession.getText(), JSON.toJSONString(list));
                 }
             }
         } catch (Exception e) {
-            errorApi.callback(e, chatId, fromId, replyToMessageId);
+            errorApi.callback(e, stepsChatSession);
         } finally {
-            stepWorkStatus.put(StepsSession.buildNewChatId(chatId, fromId), false);
+            stepWorkStatus.put(sessionId, false);
 
             if (null != execute) {
                 if (execute.isNext()) {
-                    step(chatId, fromId, replyToMessageId, text);
+                    step(stepsChatSession);
                 }
                 if (execute.isEnd()) {
-                    exit(chatId, fromId);
+                    exit(stepsChatSession);
                 }
             }
         }
     }
 
-    public void next(String chatId, String fromId, Integer replyToMessageId, String text) {
-        step(chatId, fromId, replyToMessageId, StringUtils.isBlank(text) ? "next" : text);
+    public void next(StepsChatSession stepsChatSession) {
+        step(stepsChatSession);
     }
 
-    public StepExecuteResult step(String chatId, String fromId, Integer replyToMessageId, String text) {
-
-        if (!hasInit(chatId, fromId) && !isInit()) {
-            init(chatId, fromId, replyToMessageId, text);
+    public StepExecuteResult step(StepsChatSession stepsChatSession) {
+        String sessionId = stepsChatSession.getSessionId();
+        if (!hasInit(stepsChatSession) && !isInit()) {
+            init(stepsChatSession);
         }
 
-        Boolean stepsWorkStatusBool = stepWorkStatus.get(StepsSession.buildNewChatId(chatId, fromId));
+        Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
         if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
             return StepExecuteResult.work();
         }
-        stepWorkStatus.put(StepsSession.buildNewChatId(chatId, fromId), true);
+        stepWorkStatus.put(sessionId, true);
 
         StepResult execute = null;
         try {
-            if (!message.containsKey(StepsSession.buildNewChatId(chatId, fromId))) {
+            if (!message.containsKey(sessionId)) {
                 return StepExecuteResult.not();
             }
 
-            List<String> list = message.get(StepsSession.buildNewChatId(chatId, fromId));
-            Map<String, Object> contextMap = context.get(StepsSession.buildNewChatId(chatId, fromId));
-            execute = this.stepHandleApis[list.size() - 1].execute(chatId, fromId, replyToMessageId, text, list.size(), list, contextMap);
+            List<String> list = message.get(sessionId);
+            Map<String, Object> contextMap = context.get(sessionId);
+            execute = this.stepHandleApis[list.size() - 1].execute(stepsChatSession, list.size(), list, contextMap);
             if (execute.isOk()) {
-                list.add(text);
+                list.add(stepsChatSession.getText());
             }
             if (debug) {
-                log.info("Step, id: {}, chat id: {}, text: {}, list: {}, context: {}", stepId.get(StepsSession.buildNewChatId(chatId, fromId)), chatId, text, JSON.toJSONString(list), JSON.toJSONString(contextMap));
+                log.info("Step, id: {}, chat id: {}, text: {}, list: {}, context: {}", stepId.get(sessionId), stepsChatSession.getChatId(), stepsChatSession.getText(), JSON.toJSONString(list), JSON.toJSONString(contextMap));
             }
             if ((list.size() - 1) >= this.stepHandleApis.length) {
                 if (debug) {
-                    log.info("Step finish, id: {}, chat id: {}, text: {}, list: {}, context: {}", stepId.get(StepsSession.buildNewChatId(chatId, fromId)), chatId, text, JSON.toJSONString(list), JSON.toJSONString(contextMap));
+                    log.info("Step finish, id: {}, chat id: {}, text: {}, list: {}, context: {}", stepId.get(sessionId), stepsChatSession.getChatId(), stepsChatSession.getText(), JSON.toJSONString(list), JSON.toJSONString(contextMap));
                 }
-                exit(chatId, fromId);
+                exit(stepsChatSession);
             }
         } catch (Exception e) {
-            errorApi.callback(e, chatId, fromId, replyToMessageId);
+            errorApi.callback(e, stepsChatSession);
         } finally {
-            stepWorkStatus.put(StepsSession.buildNewChatId(chatId, fromId), false);
+            stepWorkStatus.put(sessionId, false);
 
             if (null != execute) {
                 if (execute.isEnd()) {
-                    exit(chatId, fromId);
+                    exit(stepsChatSession);
                 } else if (execute.isNext()) {
-                    next(chatId, fromId, replyToMessageId, execute.getText());
+                    next(
+                            StepsChatSessionBuilder.clone(stepsChatSession).setText(execute.getText()).build()
+                    );
                 }
             }
         }
         return StepExecuteResult.ok(execute);
     }
 
-    public void exit(String chatId, String fromId) {
-        String newChatId = StepsSession.buildNewChatId(chatId, fromId);
+    public void exit(StepsChatSession stepsChatSession) {
+        String sessionId = stepsChatSession.getSessionId();
 
-        message.remove(newChatId);
-        context.remove(newChatId);
-        stepWorkStatus.remove(newChatId);
-        stepId.remove(newChatId);
+        message.remove(sessionId);
+        context.remove(sessionId);
+        stepWorkStatus.remove(sessionId);
+        stepId.remove(sessionId);
     }
 
 }
