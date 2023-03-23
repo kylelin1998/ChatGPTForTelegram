@@ -1,5 +1,7 @@
 package code.commands;
 
+import code.config.I18nEnum;
+import code.handler.I18nHandle;
 import code.handler.MessageHandle;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
@@ -21,8 +23,9 @@ public class StartCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        String chatId = String.valueOf(message.getChat().getId());
-        MessageHandle.sendMessage(chatId, HelpCommand.HelpText, true);
+        String chatId = message.getChat().getId().toString();
+        String fromId = String.valueOf(message.getFrom().getId());
+        MessageHandle.sendMessage(chatId, I18nHandle.getText(fromId, I18nEnum.HelpText), false);
     }
 
     @Override

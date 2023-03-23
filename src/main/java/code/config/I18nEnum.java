@@ -6,64 +6,51 @@ import lombok.Getter;
 public enum I18nEnum {
 
     BotStartSucceed("bot_start_succeed"),
-    WelcomeText("welcome_text"),
     HelpText("help_text"),
 
     InvalidCommand("invalid_command"),
-    MonitorList("monitor_list"),
-    NothingHere("nothing_here"),
     On("on"),
     Off("off"),
     Test("test"),
     Update("update"),
     NotFound("not_found"),
-    NotFoundMonitor("not_found_monitor"),
-    OnMonitor("on_monitor"),
-    OffMonitor("off_monitor"),
-    ExitEditMode("exit_edit_mode"),
     UnknownError("unknown_error"),
     NothingAtAll("nothing_at_all"),
-    CancelSucceed("cancel_succeed"),
+    CancelSucceeded("cancel_succeeded"),
     Confirm("confirm"),
     Cancel("cancel"),
     Delete("delete"),
     Finish("finish"),
+    ExitSucceeded("exit_succeeded"),
+    Getting("getting"),
+    Downloading("downloading"),
 
     LanguageList("language_list"),
     ChangeLanguageFinish("change_language_finish"),
 
-    DeleteMonitorConfirm("delete_monitor_confirm"),
-    DeleteMonitorFinish("delete_monitor_finish"),
+    PleaseSendMeAProblemThatYouWantToAsk("please_send_me_a_problem_that_you_want_to_ask"),
+    RequestingOpenAiApi("requesting_open_ai_api"),
+    TheCurrentModeIsContinuousChatMode("the_current_mode_is_continuous_chat_mode"),
+    AnErrorOccurredOfRequestingOpenAiApiFailed("an_error_occurred_of_requesting_open_ai_api_failed"),
+    ContinueThisChat("continue_this_chat"),
+    AskChatEnded("ask_chat_ended"),
+    TheCurrentModeIsChatMessageLimitMode("the_current_mode_is_chat_message_limit_mode"),
+    CmlChatEnded("cml_chat_ended"),
+    CmlContinueThisChat("cml_continue_this_chat"),
+    TheCurrentModeIsNoneOfMessageContextMode("the_current_mode_is_none_of_message_context_mode"),
 
-
-    ConfigDisplayStepNumber("config_display_step_number"),
-
-
-    ChannelName("channel_name"),
-    ChannelImage("channel_image"),
-    ChannelDescription("channel_description"),
-    ChannelSubscribers("channel_subscribers"),
-    ChannelIncreaseSubscribers("channel_increase_subscribers"),
-    ChannelLink("channel_link"),
-
-    CreateLimitMonitorCountPrompt("create_limit_monitor_count_prompt"),
-    CreateStepPleaseSendMeLink("create_step_please_send_me_link"),
-    CreateVerifyLink("create_verify_link"),
-    CreateVerifyFail("create_verify_fail"),
-    CreateStepPleaseSendMeStepNumber("create_step_please_send_me_step_number"),
-    CreateVerifyStepNumberFail("create_verify_step_number_fail"),
-    CreateFail("create_fail"),
-    CreateSuccess("create_success"),
-    CreateExistAlready("create_exist_already"),
-
-
-    UpdateStepChooseOneField("update_step_choose_one_field"),
-    UpdateStepPleaseSendMeNewValue("update_step_please_send_me_new_value"),
-    UpdateFieldFail("update_field_fail"),
-    UpdateSuccess("update_success"),
-
-
-    QueryWait("query_wait"),
+    YouAreNotAnAdmin("you_are_not_an_admin"),
+    AreYouSureToRestartRightNow("are_you_sure_to_restart_right_now"),
+    Restarting("restarting"),
+    GettingUpdateData("getting_update_data"),
+    AreYouSureToUpgradeThisBotRightNow("are_you_sure_to_upgrade_this_bot_right_now"),
+    TargetVersion("target_version"),
+    CurrentVersion("current_version"),
+    UpdateLogs("update_logs"),
+    Updating("updating"),
+    Downloaded("downloaded"),
+    PleaseSendMeAnImageDescription("please_send_me_an_image_description"),
+    ImageDescriptionTextCharacterCountMoreThan("image_description_text_character_count_more_than"),
 
     ;
 

@@ -74,7 +74,7 @@ public class GPTUtil {
                     .setHeader("accept", "text/event-stream")
                     .bodyString(JSON.toJSONString(parameter), org.apache.hc.core5.http.ContentType.APPLICATION_JSON)
                     .connectTimeout(Timeout.ofSeconds(30))
-                    .responseTimeout(Timeout.ofSeconds(30))
+                    .responseTimeout(Timeout.ofSeconds(10))
                     ;
             requestProxyConfig.viaProxy(request);
             Response response = request.execute();
@@ -89,7 +89,7 @@ public class GPTUtil {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                         String line = null;
                         while((line = reader.readLine()) != null) {
-//                            log.info(line);
+                            log.info(line);
                             String s = StringUtils.substringAfter(line, "data: ");
                             if (StringUtils.isNotEmpty(s)) {
                                 if ("[DONE]".equals(s)) {

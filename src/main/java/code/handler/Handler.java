@@ -46,7 +46,7 @@ public class Handler {
         messages.add(message);
 
         GPTChatParameter parameter = new GPTChatParameter();
-        parameter.setUser(fromId);
+//        parameter.setUser(fromId);
         parameter.setStream(true);
         parameter.setModel("gpt-3.5-turbo");
         parameter.setMessages(messages);
@@ -66,13 +66,13 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),"请发送给我想要问的问题...", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = String.format("%s\n---\n此模式为连续对话模式\n正在组织语言...", questionText);
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -108,7 +108,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
-                        MessageHandle.editMessage(message, String.format("糟糕糟糕OMG, 程序居然失灵啦！！！ 错误码: %s, 出现了未知错误， 请重新试试吧！！！", response.getStatusCode()));
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
 
@@ -121,7 +121,7 @@ public class Handler {
                     builder.append("\n\n");
                     builder.append("---");
                     builder.append("\n");
-                    builder.append("你可以继续发送给我想要问的问题， 或者使用 /exit 命令来进行退出此次会话");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
 
                     for (int i = 0; i < 3; i++) {
                         if (MessageHandle.editMessage(message, builder.toString())) {
@@ -155,13 +155,13 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),"请发送给我想要问的问题...", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = String.format("%s\n---\n正在组织语言...", questionText);
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, "...");
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -197,7 +197,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
-                        MessageHandle.editMessage(message, String.format("糟糕糟糕OMG, 程序居然失灵啦！！！ 错误码: %s, 出现了未知错误， 请重新试试吧！！！", response.getStatusCode()));
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.end();
                     }
 
@@ -210,7 +210,7 @@ public class Handler {
                     builder.append("\n\n");
                     builder.append("---");
                     builder.append("\n");
-                    builder.append("对话结束， 你可以使用 /ask 命令来重新发问");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.AskChatEnded));
 
                     for (int i = 0; i < 3; i++) {
                         if (MessageHandle.editMessage(message, builder.toString())) {
@@ -245,13 +245,13 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),"请发送给我想要问的问题...", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = String.format("%s\n---\n此模式为消息限制次数对话模式\n正在组织语言...", questionText);
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsChatMessageLimitMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -287,7 +287,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
-                        MessageHandle.editMessage(message, String.format("糟糕糟糕OMG, 程序居然失灵啦！！！ 错误码: %s, 出现了未知错误， 请重新试试吧！！！", response.getStatusCode()));
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
 
@@ -309,9 +309,9 @@ public class Handler {
                     builder.append("---");
                     builder.append("\n");
                     if ((messages.size() / 2) >= chatMessageLimit) {
-                        builder.append(String.format("对话结束， 当前对话次数: %s / %s， 你可以使用 /cml 命令重新发起对话", (messages.size() / 2), chatMessageLimit));
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.CmlChatEnded, (messages.size() / 2), chatMessageLimit));
                     } else {
-                        builder.append(String.format("你可以继续发送给我想要问的问题， 当前对话次数: %s / %s，或者使用 /exit 命令来进行退出此次会话", (messages.size() / 2), chatMessageLimit));
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.CmlContinueThisChat, (messages.size() / 2), chatMessageLimit));
                     }
 
                     for (int i = 0; i < 3; i++) {
@@ -329,10 +329,10 @@ public class Handler {
                 })
                 .build();
 
-        // None context chat message
+        // None of context chat message
         StepsBuilder
                 .create()
-                .bindCommand(Command.NoneContextChatMessage)
+                .bindCommand(Command.NoneOfContextChatMessage)
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
@@ -346,7 +346,7 @@ public class Handler {
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = String.format("%s\n---\n此模式为无上下文聊天模式\n正在组织语言...", questionText);
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsNoneOfMessageContextMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     List<GPTMessage> messages = Collections.synchronizedList(new ArrayList<>());
@@ -375,7 +375,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
-                        MessageHandle.editMessage(message, String.format("糟糕糟糕OMG, 程序居然失灵啦！！！ 错误码: %s, 出现了未知错误， 请重新试试吧！！！", response.getStatusCode()));
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
 
@@ -388,7 +388,7 @@ public class Handler {
                     builder.append("\n\n");
                     builder.append("---");
                     builder.append("\n");
-                    builder.append("你可以继续发送给我想要问的问题， 或者使用 /exit 命令来进行退出此次会话");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
 
                     for (int i = 0; i < 3; i++) {
                         if (MessageHandle.editMessage(message, builder.toString())) {
@@ -410,19 +410,19 @@ public class Handler {
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getChatId(), I18nEnum.UnknownError), false);
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "创建图片失败， 请发送给我想要生成图片的文本解释, 或者输入 /exit 退出", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAnImageDescription), false);
                         return StepResult.reject();
                     }
                     if (session.getText().length() > 1000) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "创建图片失败， 图片要求文本长度不能大于1000字符, 请重新发送给我想要生成图片的文本解释, 或者输入 /exit 退出", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ImageDescriptionTextCharacterCountMoreThan), false);
                         return StepResult.reject();
                     }
 
-                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在尝试生成图片...请稍等...", false);
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Getting), false);
 
                     try {
                         GPTCreateImageParameter parameter = new GPTCreateImageParameter();
@@ -431,11 +431,11 @@ public class Handler {
 
                         GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), parameter);
                         if (image.isOk()) {
-                            MessageHandle.editMessage(message, "已获取到图片， 正在下载发送...");
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloading));
                             InputStream inputStream = DownloadUtil.download(RequestProxyConfig.create(), image.getData().get(0).getUrl());
                             MessageHandle.sendImage(session.getChatId(), session.getReplyToMessageId(), "", inputStream);
                         } else {
-                            MessageHandle.editMessage(message, String.format("糟糕糟糕OMG, 程序居然失灵啦！！！ 出现了未知错误， 请重新试试吧！！！"));
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, "-1"));
                         }
                     } finally {
                         MessageHandle.deleteMessage(message);
@@ -452,12 +452,12 @@ public class Handler {
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getChatId(), I18nEnum.UnknownError), false);
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     StepsCenter.exit(session);
 
-                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "退出成功", false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ExitSucceeded), false);
                     return StepResult.end();
                 })
                 .build();
@@ -469,7 +469,7 @@ public class Handler {
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getChatId(), I18nEnum.UnknownError), false);
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     ArrayList<InlineKeyboardButton> inlineKeyboardButtons = new ArrayList<>();
@@ -481,7 +481,7 @@ public class Handler {
                         inlineKeyboardButtons.add(inlineKeyboardButton);
                     }
 
-                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getChatId(), I18nEnum.LanguageList), inlineKeyboardButtons);
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.LanguageList), inlineKeyboardButtons);
 
                     return StepResult.ok();
                 })
@@ -503,33 +503,33 @@ public class Handler {
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getChatId(), I18nEnum.UnknownError), false);
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (!isAdmin(session.getFromId())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你不是管理员， 无法使用此命令", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
                         return StepResult.end();
                     }
 
                     InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                    inlineKeyboardButton.setText("确定");
+                    inlineKeyboardButton.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Confirm));
                     inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(session, Command.Restart, "true"));
 
                     InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
-                    inlineKeyboardButton2.setText("取消");
+                    inlineKeyboardButton2.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel));
                     inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(session, Command.Restart, "false"));
 
-                    MessageHandle.sendInlineKeyboard(session.getChatId(), "确定重启机器人吗？", inlineKeyboardButton, inlineKeyboardButton2);
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.AreYouSureToRestartRightNow), inlineKeyboardButton, inlineKeyboardButton2);
 
                     return StepResult.ok();
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     Boolean of = Boolean.valueOf(session.getText());
                     if (of) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在重启...", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Restarting), false);
                         ProgramUtil.restart(Config.MetaData.ProcessName);
                     } else {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "取消成功", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
                     }
                     return StepResult.end();
                 })
@@ -542,36 +542,36 @@ public class Handler {
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession stepsChatSession) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-                    MessageHandle.sendMessage(stepsChatSession.getChatId(), I18nHandle.getText(stepsChatSession.getChatId(), I18nEnum.UnknownError), false);
+                    MessageHandle.sendMessage(stepsChatSession.getChatId(), I18nHandle.getText(stepsChatSession.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (!isAdmin(session.getFromId())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你不是管理员， 无法使用此命令", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
                         return StepResult.end();
                     }
 
-                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在获取更新数据...", false);
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.GettingUpdateData), false);
                     GithubUtil.LatestReleaseResponse release = GithubUtil.getLatestRelease(RequestProxyConfig.create(), Config.MetaData.GitOwner, Config.MetaData.GitRepo);
                     if (release.isOk()) {
                         StringBuilder builder = new StringBuilder();
-                        builder.append("确定更新机器人吗? ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.AreYouSureToUpgradeThisBotRightNow));
                         builder.append("\n");
-                        builder.append("目标版本: ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.TargetVersion) + ": ");
                         builder.append(release.getTagName());
                         builder.append("\n");
-                        builder.append("目前版本: ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.CurrentVersion) + ": ");
                         builder.append(Config.MetaData.CurrentVersion);
                         builder.append("\n");
-                        builder.append("更新内容: ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.UpdateLogs) + ": ");
                         builder.append("\n");
                         builder.append(release.getBody());
 
                         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                        inlineKeyboardButton.setText("确定");
+                        inlineKeyboardButton.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Confirm));
                         inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(session, Command.Upgrade, "true"));
 
                         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
-                        inlineKeyboardButton2.setText("取消");
+                        inlineKeyboardButton2.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel));
                         inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(session, Command.Upgrade, "false"));
 
                         MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), inlineKeyboardButton, inlineKeyboardButton2);
@@ -588,14 +588,14 @@ public class Handler {
 
                         return StepResult.ok();
                     } else {
-                        MessageHandle.editMessage(message, "获取更新数据失败...");
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
                         return StepResult.end();
                     }
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     Boolean of = Boolean.valueOf(session.getText());
                     if (of) {
-                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在更新...", false);
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Updating), false);
                         String url = (String) context.get("url");
 
                         AtomicInteger count = new AtomicInteger();
@@ -606,7 +606,7 @@ public class Handler {
                                 (String var1, String var2, Long var3, Long var4) -> {
                                     count.incrementAndGet();
                                     if (count.get() == 10) {
-                                        MessageHandle.editMessage(message, String.format("已下载: %s, 总文件大小: %s", BytesUtil.toDisplayStr(var4 - var3), BytesUtil.toDisplayStr(var4)));
+                                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloaded, BytesUtil.toDisplayStr(var4 - var3), BytesUtil.toDisplayStr(var4)));
                                         count.set(0);
                                     }
                                 }
@@ -614,10 +614,10 @@ public class Handler {
                         if (b) {
                             ProgramUtil.restart(Config.MetaData.ProcessName);
                         } else {
-                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "更新失败， 重新试试吧", false);
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                         }
                     } else {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "取消成功", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
                     }
                     return StepResult.end();
                 })
