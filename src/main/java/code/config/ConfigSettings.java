@@ -6,8 +6,6 @@ import lombok.Data;
 public class ConfigSettings {
 
     private Boolean debug;
-    private String larkSecret;
-    private String larkToken;
 
     private Boolean onProxy;
     private String proxyHost;
