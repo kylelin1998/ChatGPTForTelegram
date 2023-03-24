@@ -30,6 +30,9 @@ public class StepsRegisterCenter {
 
         priorityMap.put(stepsChatSession.getSessionId(), stepsHandler);
     }
+    public synchronized static void finish(StepsChatSession stepsChatSession) {
+        priorityMap.remove(stepsChatSession.getSessionId());
+    }
     public static StepsHandler getPriority(StepsChatSession stepsChatSession) {
         return priorityMap.get(stepsChatSession.getSessionId());
     }

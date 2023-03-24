@@ -74,7 +74,7 @@ public class StepsCenter {
             }
         }
         if (!permission) {
-            MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "程序目前内测中， 不进行开放！", false);
+            MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "你没有使用权限， 不过你可以自己搭建一个\nhttps://github.com/kylelin1998/ChatGPTForTelegram", false);
             return;
         }
 

@@ -171,6 +171,7 @@ public class StepsHandler {
         context.remove(sessionId);
         stepWorkStatus.remove(sessionId);
         stepId.remove(sessionId);
+        StepsRegisterCenter.finish(stepsChatSession);
     }
 
 }
