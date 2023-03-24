@@ -46,7 +46,7 @@ docker build -t gptft .
 ### 第二步:
 运行容器镜像
 ```
-docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd):/app -v $(pwd)/config:/config --restart=always gptft
+docker run --name gptft -d -v $(pwd):/app --restart=always gptft
 ```
 
 ## 关于我

@@ -44,7 +44,7 @@ docker build -t gptft .
 ### Second step:
 Run the docker image of just then build.
 ```
-docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd):/app -v $(pwd)/config:/config --restart=always gptft
+docker run --name gptft -d -v $(pwd):/app --restart=always gptft
 ```
 
 ## About
