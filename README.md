@@ -5,6 +5,7 @@
 
 ## 介绍
 目前机器人基于gpt-3.5-turbo
+
 使用机器人可以让你轻松进行对话， 后续机器人的更新升级一个命令即可搞定， 无需再上服务器进行升级机器人
 
 ## 部署
@@ -14,7 +15,9 @@
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)
 
 首先，在您的服务器上创建一个文件夹
+
 然后，在其中创建名为 config 的另一个文件夹，config文件夹下必须包含名为 config.json 的JSON文件
+
 接着，将 ChatGPTForTelegram-universal.jar, run.sh 和 Dockerfile 传输到该文件夹中
 
 ### config.json
@@ -48,7 +51,9 @@ docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd):/app -v $(pwd)/config:
 
 ## 关于我
 我的TG: https://t.me/KyleLin1998
+
 我的TG频道: https://t.me/KyleLin1998Channel
+
 我的邮箱: email@kylelin1998.com
 
 ## 使用
