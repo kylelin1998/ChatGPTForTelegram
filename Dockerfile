@@ -7,6 +7,9 @@ RUN set -xe \
 && apk --no-cache add ttf-dejavu fontconfig
 # 系统编码
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-COPY ChatGPTForTelegram-universal.jar app.jar
-# 启动jar包
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+
+WORKDIR /app
+COPY ChatGPTForTelegram-universal.jar /
+COPY run.sh /
+
+ENTRYPOINT ["sh", "run.sh"]

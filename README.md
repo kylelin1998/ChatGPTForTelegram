@@ -13,9 +13,9 @@
 ### Prepare
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)
 
-首先，在您的服务器上创建一个你喜欢的名称的文件夹
-然后，在其中创建名为“config”的另一个文件夹，“config”文件夹必须包含名为“config.json”的JSON文件
-接着，将“ChatGPTForTelegram-universal.jar”和“Dockerfile”传输到该文件夹中
+首先，在您的服务器上创建一个文件夹
+然后，在其中创建名为 config 的另一个文件夹，config文件夹下必须包含名为 config.json 的JSON文件
+接着，将 ChatGPTForTelegram-universal.jar, run.sh 和 Dockerfile 传输到该文件夹中
 
 ### config.json
 ```
@@ -43,7 +43,7 @@ docker build -t gptft .
 ### 第二步:
 运行容器镜像
 ```
-docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd)/ChatGPTForTelegram-universal.jar:/app.jar -v $(pwd)/config:/config  --restart=always gptft
+docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd):/app -v $(pwd)/config:/config --restart=always gptft
 ```
 
 ## 关于我

@@ -28,7 +28,7 @@ public class Config {
         public final static String CurrentVersion = "1.0.0";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
-        public final static String ProcessName = "app.jar";
+        public final static String ProcessName = "ChatGPTForTelegram-universal.jar";
         public final static String JarName = "ChatGPTForTelegram-universal.jar";
     }
 

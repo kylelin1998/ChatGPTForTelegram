@@ -38,7 +38,8 @@ public class DownloadUtil {
             GetRequest request = Unirest
                     .get(url)
                     .downloadMonitor(progressMonitor)
-                    .connectTimeout((int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
+                    .connectTimeout((int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS))
+                    ;
             requestProxyConfig.viaProxy(request);
             HttpResponse<File> response = request.asFile(file, StandardCopyOption.REPLACE_EXISTING);
             return response.getStatus() == 200;

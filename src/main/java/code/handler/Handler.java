@@ -14,11 +14,15 @@ import code.util.gpt.response.GPTChatResponse;
 import code.util.gpt.response.GPTCreateImageResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -599,23 +603,29 @@ public class Handler {
                         String url = (String) context.get("url");
 
                         AtomicInteger count = new AtomicInteger();
+                        String temp = System.getProperty("user.dir") + "/temp.jar";
+                        log.info("temp: " + temp);
                         boolean b = DownloadUtil.download(
                                 RequestProxyConfig.create(),
                                 url,
-                                "/" + Config.MetaData.ProcessName,
+                                temp,
                                 (String var1, String var2, Long var3, Long var4) -> {
-                                    count.incrementAndGet();
-                                    if (count.get() == 10) {
-                                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloaded, BytesUtil.toDisplayStr(var4 - var3), BytesUtil.toDisplayStr(var4)));
-                                        count.set(0);
+                                    if ((var4 - var3) > 0) {
+                                        count.incrementAndGet();
+                                        if (count.get() == 100) {
+                                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloaded, BytesUtil.toDisplayStr(var3), BytesUtil.toDisplayStr(var4)));
+                                            count.set(0);
+                                        }
                                     }
                                 }
                         );
+
                         if (b) {
-                            ProgramUtil.restart(Config.MetaData.ProcessName);
+                            System.exit(1);
                         } else {
                             MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                         }
+
                     } else {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
                     }

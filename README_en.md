@@ -17,7 +17,7 @@ The bot's deploy steps based on the Docker, its upgrade feature also based on th
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)
 
 To start, create a folder named whatever you prefer on your server. 
-Then create another folder named config and the config folder must contains a json file named config.json in, then transfer ChatGPTForTelegram-universal.jar and Dockerfile to the folder.
+Then create another folder named config and the config folder must contains a json file named config.json in, then transfer ChatGPTForTelegram-universal.jar, run.sh and Dockerfile to the folder.
 ### config.json
 ```
 {
@@ -44,7 +44,7 @@ docker build -t gptft .
 ### Second step:
 Run the docker image of just then build.
 ```
-docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd)/ChatGPTForTelegram-universal.jar:/app.jar -v $(pwd)/config:/config  --restart=always gptft
+docker run --name gptft -d -v $(pwd)/logs:/logs -v $(pwd):/app -v $(pwd)/config:/config --restart=always gptft
 ```
 
 ## About
