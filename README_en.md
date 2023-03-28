@@ -11,6 +11,10 @@ The bot has some commands that consider different scenes for chatting.
 This project is an open-source project that you can trust. Once deployed, the bot's version is easy with a single command to upgrade.
 
 ## Deploy
+Youtube deploy guide: https://youtu.be/Uu-0kLWsdFk
+
+Bilibili deploy guide： https://www.bilibili.com/video/BV1KL411S7w7/
+
 The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
 
 ### Prepare
@@ -34,6 +38,12 @@ Then create another folder named config and the config folder must contains a js
   ]
 }
 ```
+```
+on proxy -> Whether to open proxy
+bot admin id -> Bot's admin, the id is chat id of Telegram.
+bot name, and token you -> @BotFather has given bot name,  bot token
+permission chat id array -> Allow using the bot.
+```
 
 ### First step:
 Build a docker image for use.
@@ -49,7 +59,9 @@ docker run --name gptft -d -v $(pwd):/app --restart=always gptft
 
 ## About
 My telegram: https://t.me/KyleLin1998
+
 My telegram channel: https://t.me/KyleLin1998Channel
+
 My email: email@kylelin1998.com
 
 ## Usage

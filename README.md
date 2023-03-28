@@ -9,6 +9,10 @@
 使用机器人可以让你轻松进行对话， 后续机器人的更新升级一个命令即可搞定， 无需再上服务器进行升级机器人
 
 ## 部署
+Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
+
+哔哩哔哩部署教程： https://www.bilibili.com/video/BV1KL411S7w7/
+
 机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
 
 ### Prepare
@@ -35,6 +39,13 @@
     "xxxx"
   ]
 }
+```
+```
+on proxy 代表是否开启代理
+bot admin id 就是你要指定那个号是管理员， 这个id是chat id
+bot name, 和 bot token 就是机器人创建好就有的，你肯定知道
+gpt token 就是 gpt的token
+permission chat id array这个就是代表你只能允许列表下的这些chat id使用机器人， 可以填写个人的，或者是群的chat id
 ```
 
 ### 第一步:
