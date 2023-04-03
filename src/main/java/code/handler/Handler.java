@@ -68,12 +68,18 @@ public class Handler {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
                     MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
+                    context.put("message", message);
+                    return StepResult.next(session.getText());
+                })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
-
+                    return StepResult.next(session.getText());
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
@@ -143,6 +149,12 @@ public class Handler {
                     messages.add(gptMessage);
 
                     context.put("messages", messages);
+
+                    Object o = context.get("message");
+                    if (null != o) {
+                        context.remove("message");
+                        MessageHandle.deleteMessage((Message) o);
+                    }
 
                     return StepResult.reject();
                 })
@@ -247,7 +259,18 @@ public class Handler {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
                     MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
+                    context.put("message", message);
+                    return StepResult.next(session.getText());
+                })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (StringUtils.isBlank(session.getText())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        return StepResult.reject();
+                    }
+                    return StepResult.next(session.getText());
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText())) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
@@ -329,6 +352,13 @@ public class Handler {
                     if ((messages.size() / 2) >= chatMessageLimit) {
                         return StepResult.end();
                     }
+
+                    Object o = context.get("message");
+                    if (null != o) {
+                        context.remove("message");
+                        MessageHandle.deleteMessage((Message) o);
+                    }
+
                     return StepResult.reject();
                 })
                 .build();
@@ -428,21 +458,18 @@ public class Handler {
 
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Getting), false);
 
-                    try {
-                        GPTCreateImageParameter parameter = new GPTCreateImageParameter();
-                        parameter.setUser(session.getSessionId());
-                        parameter.setPrompt(session.getText());
+                    GPTCreateImageParameter parameter = new GPTCreateImageParameter();
+                    parameter.setUser(session.getSessionId());
+                    parameter.setPrompt(session.getText());
 
-                        GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), parameter);
-                        if (image.isOk()) {
-                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloading));
-                            InputStream inputStream = DownloadUtil.download(RequestProxyConfig.create(), image.getData().get(0).getUrl());
-                            MessageHandle.sendImage(session.getChatId(), session.getReplyToMessageId(), "", inputStream);
-                        } else {
-                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, "-1"));
-                        }
-                    } finally {
+                    GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), parameter);
+                    if (image.isOk()) {
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloading));
+                        InputStream inputStream = DownloadUtil.download(RequestProxyConfig.create(), image.getData().get(0).getUrl());
+                        MessageHandle.sendImage(session.getChatId(), session.getReplyToMessageId(), "", inputStream);
                         MessageHandle.deleteMessage(message);
+                    } else {
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, "-1"));
                     }
 
                     return StepResult.end();
@@ -480,7 +507,7 @@ public class Handler {
                     for (I18nLocaleEnum value : I18nLocaleEnum.values()) {
                         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                         inlineKeyboardButton.setText(value.getDisplayText());
-                        inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(session, Command.Language, value.getAlias()));
+                        inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(false, session, Command.Language, value.getAlias()));
 
                         inlineKeyboardButtons.add(inlineKeyboardButton);
                     }
@@ -517,11 +544,11 @@ public class Handler {
 
                     InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                     inlineKeyboardButton.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Confirm));
-                    inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(session, Command.Restart, "true"));
+                    inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(false, session, Command.Restart, "true"));
 
                     InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
                     inlineKeyboardButton2.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel));
-                    inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(session, Command.Restart, "false"));
+                    inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(false, session, Command.Restart, "false"));
 
                     MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.AreYouSureToRestartRightNow), inlineKeyboardButton, inlineKeyboardButton2);
 
@@ -572,11 +599,11 @@ public class Handler {
 
                         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                         inlineKeyboardButton.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Confirm));
-                        inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(session, Command.Upgrade, "true"));
+                        inlineKeyboardButton.setCallbackData(StepsCenter.buildCallbackData(false, session, Command.Upgrade, "true"));
 
                         InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
                         inlineKeyboardButton2.setText(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel));
-                        inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(session, Command.Upgrade, "false"));
+                        inlineKeyboardButton2.setCallbackData(StepsCenter.buildCallbackData(false, session, Command.Upgrade, "false"));
 
                         MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), inlineKeyboardButton, inlineKeyboardButton2);
 

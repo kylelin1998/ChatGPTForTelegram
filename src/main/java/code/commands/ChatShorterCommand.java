@@ -25,7 +25,7 @@ public class ChatShorterCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        StepsCenter.cmdHandle(Command.ChatShorter, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
+        StepsCenter.cmdHandle(Command.ChatShorter, StepsChatSessionBuilder.create(message).setText(arguments).build());
     }
 
     @Override

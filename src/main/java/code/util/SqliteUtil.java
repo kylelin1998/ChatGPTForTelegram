@@ -12,7 +12,7 @@ import java.sql.Statement;
 public class SqliteUtil {
 
     public interface SqliteInterface {
-        Object execute(Statement statement) throws SQLException;
+        Object execute(Statement statement) throws SQLException, IllegalAccessException, InstantiationException;
     }
 
     public static Object execute(String dbPath, SqliteInterface sqliteInterface) throws Exception {

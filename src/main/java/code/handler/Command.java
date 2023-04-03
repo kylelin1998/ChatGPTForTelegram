@@ -12,6 +12,7 @@ public enum Command {
     ChatMsgLimit("cml"),
     NoneOfContextChatMessage("nccm"),
     Exit("exit"),
+    Admin("admin"),
     Image("image"),
 
     Language("language"),

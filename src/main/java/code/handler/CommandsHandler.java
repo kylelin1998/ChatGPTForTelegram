@@ -65,17 +65,22 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         if (null != callbackQuery) {
             String data = callbackQuery.getData();
             StepsCenter.CallbackData callbackData = StepsCenter.parseCallbackData(data);
+            if (null == callbackData) {
+                MessageHandle.sendMessage(String.valueOf(callbackQuery.getMessage().getChatId()), "Error...", false);
+                return;
+            }
+
             StepsChatSession session = StepsChatSessionBuilder
                     .create(callbackQuery)
                     .setText(callbackData.getText())
                     .build();
 
-            if (!session.getSessionId().equals(String.valueOf(callbackData.getId()))) {
+            if (!session.getFromId().equals(String.valueOf(callbackData.getFromId()))) {
                 return;
             }
 
             if (StringUtils.isNotBlank(data)) {
-                StepsCenter.cmdHandle(callbackData.getCommand(), true, session);
+                StepsCenter.cmdHandle(callbackData, session);
                 return;
             }
         }

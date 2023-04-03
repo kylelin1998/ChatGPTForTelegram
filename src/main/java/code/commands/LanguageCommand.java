@@ -22,7 +22,7 @@ public class LanguageCommand extends BotCommand {
     }
 
     public void execute(AbsSender absSender, Message message, String[] arguments) {
-        StepsCenter.cmdHandle(Command.Language, false, StepsChatSessionBuilder.create(message).setText(arguments).build());
+        StepsCenter.cmdHandle(Command.Language, StepsChatSessionBuilder.create(message).setText(arguments).build());
     }
 
     @Override

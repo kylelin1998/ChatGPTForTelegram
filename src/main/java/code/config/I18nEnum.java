@@ -28,6 +28,7 @@ public enum I18nEnum {
     LanguageList("language_list"),
     ChangeLanguageFinish("change_language_finish"),
 
+    ThisChatIsANewChat("this_chat_is_a_new_chat"),
     PleaseSendMeAProblemThatYouWantToAsk("please_send_me_a_problem_that_you_want_to_ask"),
     RequestingOpenAiApi("requesting_open_ai_api"),
     TheCurrentModeIsContinuousChatMode("the_current_mode_is_continuous_chat_mode"),

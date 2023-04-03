@@ -64,18 +64,18 @@ public class StepsHandler {
     }
 
     public void init(StepsChatSession stepsChatSession) {
-        StepsRegisterCenter.priority(stepsChatSession, this);
-        String sessionId = stepsChatSession.getSessionId();
-
-        Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
-        if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
-            return;
-        }
-
-        stepWorkStatus.put(sessionId, true);
-
         StepResult execute = null;
         try {
+            StepsRegisterCenter.priority(stepsChatSession, this);
+            String sessionId = stepsChatSession.getSessionId();
+
+            Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
+            if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
+                return;
+            }
+
+            stepWorkStatus.put(sessionId, true);
+
             List<String> list = Collections.synchronizedList(new ArrayList<>());
             ConcurrentHashMap<String, Object> contextMap = new ConcurrentHashMap<>();
             if (null != initStep) {
@@ -96,7 +96,7 @@ public class StepsHandler {
         } catch (Exception e) {
             errorApi.callback(e, stepsChatSession);
         } finally {
-            stepWorkStatus.put(sessionId, false);
+            stepWorkStatus.put(stepsChatSession.getSessionId(), false);
 
             if (null != execute) {
                 if (execute.isNext()) {
@@ -114,19 +114,19 @@ public class StepsHandler {
     }
 
     public StepExecuteResult step(StepsChatSession stepsChatSession) {
-        String sessionId = stepsChatSession.getSessionId();
-        if (!hasInit(stepsChatSession) && !isInit()) {
-            init(stepsChatSession);
-        }
-
-        Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
-        if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
-            return StepExecuteResult.work();
-        }
-        stepWorkStatus.put(sessionId, true);
-
         StepResult execute = null;
         try {
+            String sessionId = stepsChatSession.getSessionId();
+            if (!hasInit(stepsChatSession) && !isInit()) {
+                init(stepsChatSession);
+            }
+
+            Boolean stepsWorkStatusBool = stepWorkStatus.get(sessionId);
+            if (null != stepsWorkStatusBool && stepsWorkStatusBool) {
+                return StepExecuteResult.work();
+            }
+            stepWorkStatus.put(sessionId, true);
+
             if (!message.containsKey(sessionId)) {
                 return StepExecuteResult.not();
             }
@@ -149,7 +149,7 @@ public class StepsHandler {
         } catch (Exception e) {
             errorApi.callback(e, stepsChatSession);
         } finally {
-            stepWorkStatus.put(sessionId, false);
+            stepWorkStatus.put(stepsChatSession.getSessionId(), false);
 
             if (null != execute) {
                 if (execute.isEnd()) {

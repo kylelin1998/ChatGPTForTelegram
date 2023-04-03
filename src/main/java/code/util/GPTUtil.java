@@ -81,15 +81,12 @@ public class GPTUtil {
 
             StringBuilder builder = new StringBuilder();
             int code = response.handleResponse((classicHttpResponse) -> {
-//                log.info(JSON.toJSONString(classicHttpResponse));
-
                 InputStream inputStream = classicHttpResponse.getEntity().getContent();
 
                 try (BufferedInputStream in = IOUtils.buffer(inputStream)) {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                         String line = null;
                         while((line = reader.readLine()) != null) {
-                            log.info(line);
                             String s = StringUtils.substringAfter(line, "data: ");
                             if (StringUtils.isNotEmpty(s)) {
                                 if ("[DONE]".equals(s)) {

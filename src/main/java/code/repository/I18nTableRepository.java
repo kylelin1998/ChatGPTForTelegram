@@ -2,6 +2,7 @@ package code.repository;
 
 import code.config.Config;
 import code.config.TableEnum;
+import code.repository.mapper.TableRepository;
 import code.util.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 

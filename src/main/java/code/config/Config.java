@@ -3,14 +3,18 @@ package code.config;
 import code.util.ExceptionUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONReader;
+import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,8 +28,10 @@ public class Config {
 
     public static String DBPath = CurrentDir + "/db.db";
 
+    private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
+
     public static class MetaData {
-        public final static String CurrentVersion = "1.0.0";
+        public final static String CurrentVersion = "1.0.10";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
         public final static String ProcessName = "ChatGPTForTelegram-universal.jar";
@@ -51,7 +57,9 @@ public class Config {
         }
     }
 
-    public synchronized static ConfigSettings readConfig() {
+    public static ConfigSettings readConfig() {
+        ReentrantReadWriteLock.ReadLock readLock = reentrantReadWriteLock.readLock();
+        readLock.lock();
         try {
             File file = new File(SettingsPath);
             boolean exists = file.exists();
@@ -64,20 +72,55 @@ public class Config {
             }
         } catch (IOException e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e), SettingsPath);
+        } finally {
+            readLock.unlock();
         }
         return null;
     }
 
-//    public synchronized static boolean saveConfig(ConfigSettings configSettings) {
-//        try {
-//            File file = new File(SettingsPath);
-//            FileUtils.write(file, JSON.toJSONString(configSettings, JSONWriter.Feature.PrettyFormat), StandardCharsets.UTF_8);
-//            return true;
-//        } catch (IOException e) {
-//            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
-//        }
-//        return false;
-//    }
+    public static ConfigSettings verifyConfig(String configJson) {
+        if (StringUtils.isBlank(configJson)) {
+            return null;
+        }
+        ConfigSettings configSettings = JSON.parseObject(configJson, ConfigSettings.class, JSONReader.Feature.SupportSmartMatch);
+        if (null == configSettings) {
+            return null;
+        }
+        for (Field field : configSettings.getClass().getDeclaredFields()) {
+            ConfigField configField = field.getAnnotation(ConfigField.class);
+            if (null == configField) {
+                continue;
+            }
+            if (configField.isNotNull()) {
+                try {
+                    field.setAccessible(true);
+                    Object o = field.get(configSettings);
+                    if (null == o) {
+                        return null;
+                    }
+                } catch (IllegalAccessException e) {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    return null;
+                }
+            }
+        }
 
+        return configSettings;
+    }
+
+    public static boolean saveConfig(ConfigSettings configSettings) {
+        ReentrantReadWriteLock.WriteLock writeLock = reentrantReadWriteLock.writeLock();
+        writeLock.lock();
+        try {
+            File file = new File(SettingsPath);
+            FileUtils.write(file, JSON.toJSONString(configSettings, JSONWriter.Feature.PrettyFormat), StandardCharsets.UTF_8);
+            return true;
+        } catch (IOException e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+        } finally {
+            writeLock.unlock();
+        }
+        return false;
+    }
 
 }
