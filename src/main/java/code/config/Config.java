@@ -2,6 +2,7 @@ package code.config;
 
 import code.util.ExceptionUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +83,11 @@ public class Config {
         if (StringUtils.isBlank(configJson)) {
             return null;
         }
-        ConfigSettings configSettings = JSON.parseObject(configJson, ConfigSettings.class, JSONReader.Feature.SupportSmartMatch);
+        ConfigSettings configSettings = null;
+        try {
+            configSettings = JSON.parseObject(configJson, ConfigSettings.class, JSONReader.Feature.SupportSmartMatch);
+        } catch (JSONException e) {
+        }
         if (null == configSettings) {
             return null;
         }

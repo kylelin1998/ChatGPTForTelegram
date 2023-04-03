@@ -1,9 +1,6 @@
 package code.handler;
 
-import code.config.Config;
-import code.config.I18nEnum;
-import code.config.I18nLocaleEnum;
-import code.config.RequestProxyConfig;
+import code.config.*;
 import code.handler.steps.*;
 import code.util.*;
 import code.util.gpt.GPTRole;
@@ -13,6 +10,7 @@ import code.util.gpt.parameter.GPTMessage;
 import code.util.gpt.response.GPTChatResponse;
 import code.util.gpt.response.GPTCreateImageResponse;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -489,6 +488,87 @@ public class Handler {
                     StepsCenter.exit(session);
 
                     MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ExitSucceeded), false);
+                    return StepResult.end();
+                })
+                .build();
+
+        // Admin
+        StepsBuilder
+                .create()
+                .bindCommand(Command.Admin)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
+                            .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.UpdateConfig), StepsCenter.buildCallbackData(true, session, Command.UpdateConfig, null))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Upgrade), StepsCenter.buildCallbackData(true, session, Command.Upgrade, null))
+                            .build();
+
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), "Admin",  buttons);
+                    return StepResult.end();
+                })
+                .build();
+
+        // Update config
+        StepsBuilder
+                .create()
+                .bindCommand(Command.UpdateConfig)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
+                            .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Confirm), StepsCenter.buildCallbackData(false, session, Command.UpdateConfig, "confirm"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel), StepsCenter.buildCallbackData(false, session, Command.UpdateConfig, "cancel"))
+                            .build();
+                    ConfigSettings config = Config.readConfig();
+
+                    MessageHandle.sendMessage(session.getFromId(), JSON.toJSONString(config, JSONWriter.Feature.PrettyFormat), false);
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.AreYouSureToUpdateTheConfig),  buttons);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (text.equals("confirm")) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeConfigContent), false);
+                        return StepResult.ok();
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
+                        return StepResult.end();
+                    }
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    ConfigSettings configSettings = Config.verifyConfig(text);
+                    if (null == configSettings) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateConfigFail), false);
+                        return StepResult.reject();
+                    }
+
+                    boolean b = Config.saveConfig(configSettings);
+                    if (b) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                    }
+
                     return StepResult.end();
                 })
                 .build();

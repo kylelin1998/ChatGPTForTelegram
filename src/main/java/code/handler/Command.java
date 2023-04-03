@@ -15,6 +15,7 @@ public enum Command {
     Admin("admin"),
     Image("image"),
 
+    UpdateConfig("uc"),
     Language("language"),
     Restart("restart"),
     Upgrade("upgrade"),
