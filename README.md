@@ -11,8 +11,6 @@
 ## 部署
 Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
 
-哔哩哔哩部署教程： https://www.bilibili.com/video/BV1KL411S7w7/
-
 机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
 
 ### Prepare
@@ -79,6 +77,7 @@ nccm - 发起无上下文对话
 image - 生成图片
 exit - 退出
 language - 切换语言
+admin - 管理员命令
 restart - 重启机器人
 upgrade - 升级机器人
 help - 帮助

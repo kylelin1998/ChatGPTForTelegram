@@ -13,8 +13,6 @@ This project is an open-source project that you can trust. Once deployed, the bo
 ## Deploy
 Youtube deploy guide: https://youtu.be/Uu-0kLWsdFk
 
-Bilibili deploy guide： https://www.bilibili.com/video/BV1KL411S7w7/
-
 The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
 
 ### Prepare
@@ -76,6 +74,7 @@ nccm - The current mode is none of message context mode
 image - Create a image for you
 exit - Exit chat
 language - Change language
+admin - Admin
 restart - Restart the bot
 upgrade - Upgrade the bot
 help - Help
