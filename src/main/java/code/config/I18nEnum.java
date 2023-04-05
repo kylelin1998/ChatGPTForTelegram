@@ -61,6 +61,8 @@ public enum I18nEnum {
     PleaseSendMeAnImageDescription("please_send_me_an_image_description"),
     ImageDescriptionTextCharacterCountMoreThan("image_description_text_character_count_more_than"),
 
+    ChatHasTooManyConversations("chat_has_too_many_conversations"),
+
     ;
 
     private String key;

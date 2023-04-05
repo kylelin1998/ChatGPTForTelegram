@@ -117,8 +117,14 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
-                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
-                        return StepResult.reject();
+                        int statusCode = response.getStatusCode();
+                        if (statusCode == 400) {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
+                            return StepResult.reject();
+                        } else {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
+                            return StepResult.reject();
+                        }
                     }
 
                     StringBuilder builder = new StringBuilder();
