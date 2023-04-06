@@ -4,6 +4,8 @@
 [![release](https://img.shields.io/github/v/release/kylelin1998/ChatGPTForTelegram)](https://github.com/kylelin1998/ChatGPTForTelegram/releases/latest)
 
 ## 介绍
+ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于自己的机器人
+
 目前机器人基于gpt-3.5-turbo
 
 使用机器人可以让你轻松进行对话， 后续机器人的更新升级一个命令即可搞定， 无需再上服务器进行升级机器人
