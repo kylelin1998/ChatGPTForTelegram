@@ -23,6 +23,7 @@ Then create another folder named config and the config folder must contains a js
 ### config.json
 ```
 {
+  "open": false,
   "on_proxy": false,
   "proxy_host": "127.0.0.1",
   "proxy_port": 7890,
@@ -33,14 +34,19 @@ Then create another folder named config and the config folder must contains a js
   "gpt_token": "xxxxx",
   "permission_chat_id_array": [
     "xxxx"
-  ]
+  ],
+  "block_chat_id_array": []
 }
 ```
 ```
+open -> 
+Open status: Anyone can use this bot.
+Close status: Only permission chat id list can use this bot. 
 on proxy -> Whether to open proxy
 bot admin id -> Bot's admin, the id is chat id of Telegram.
 bot name, and token you -> @BotFather has given bot name,  bot token
 permission chat id array -> Allow using the bot.
+block_chat_id_array -> Not allow using the bot.
 ```
 
 ### First step:

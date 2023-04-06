@@ -25,6 +25,7 @@ Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
 ### config.json
 ```
 {
+  "open": false,
   "on_proxy": false,
   "proxy_host": "127.0.0.1",
   "proxy_port": 7890,
@@ -35,15 +36,20 @@ Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
   "gpt_token": "xxxxx",
   "permission_chat_id_array": [
     "xxxx"
-  ]
+  ],
+  "block_chat_id_array": []
 }
 ```
 ```
+open -> 
+开放状态：任何人都可以使用这个机器人。
+关闭状态：只有permission chat id列表才能使用这个bot。
 on proxy 代表是否开启代理
 bot admin id 就是你要指定那个号是管理员， 这个id是chat id
 bot name, 和 bot token 就是机器人创建好就有的，你肯定知道
-gpt token 就是 gpt的token
-permission chat id array这个就是代表你只能允许列表下的这些chat id使用机器人， 可以填写个人的，或者是群的chat id
+gpt token -> 就是 gpt的token
+permission chat id array -> 这个就是代表你只能允许列表下的这些chat id使用机器人， 可以填写个人的，或者是群的chat id
+block_chat_id_array -> 不允许使用机器人的chat id列表
 ```
 
 ### 第一步:
