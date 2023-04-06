@@ -32,7 +32,7 @@ public class Config {
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
     public static class MetaData {
-        public final static String CurrentVersion = "1.0.8";
+        public final static String CurrentVersion = "1.0.15";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
         public final static String ProcessName = "ChatGPTForTelegram-universal.jar";
@@ -58,6 +58,22 @@ public class Config {
         }
     }
 
+    private static ConfigSettings handle(ConfigSettings configSettings) {
+        Boolean open = configSettings.getOpen();
+        if (null == open) {
+            configSettings.setOpen(false);
+        }
+        String[] blockChatIdArray = configSettings.getBlockChatIdArray();
+        if (null == blockChatIdArray) {
+            configSettings.setBlockChatIdArray(new String[]{});
+        }
+        String[] permissionChatIdArray = configSettings.getPermissionChatIdArray();
+        if (null == permissionChatIdArray) {
+            configSettings.setPermissionChatIdArray(new String[]{});
+        }
+        return configSettings;
+    }
+
     public static ConfigSettings readConfig() {
         ReentrantReadWriteLock.ReadLock readLock = reentrantReadWriteLock.readLock();
         readLock.lock();
@@ -67,7 +83,7 @@ public class Config {
             if (exists) {
                 String text = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 ConfigSettings configSettings = JSON.parseObject(text, ConfigSettings.class, JSONReader.Feature.SupportSmartMatch);
-                return configSettings;
+                return handle(configSettings);
             } else {
                 log.warn("Settings file not found, " + SettingsPath);
             }

@@ -515,13 +515,65 @@ public class Handler {
 
                     List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
                             .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus), StepsCenter.buildCallbackData(true, session, Command.SetOpenStatus, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.UpdateConfig), StepsCenter.buildCallbackData(true, session, Command.UpdateConfig, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.Upgrade), StepsCenter.buildCallbackData(true, session, Command.Upgrade, null))
                             .build();
+                    ConfigSettings config = Config.readConfig();
 
-                    MessageHandle.sendInlineKeyboard(session.getChatId(), "Admin",  buttons);
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus) + ": ");
+                    builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
+
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(),  buttons);
+
                     return StepResult.end();
+                })
+                .build();
+
+        // Set open status
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetOpenStatus)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
+                            .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Open), StepsCenter.buildCallbackData(false, session, Command.SetOpenStatus, "open"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Close), StepsCenter.buildCallbackData(false, session, Command.SetOpenStatus, "close"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel), StepsCenter.buildCallbackData(false, session, Command.SetOpenStatus, "cancel"))
+                            .build();
+
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.ChooseOpenStatus),  buttons);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (text.equals("open") || text.equals("close")) {
+                        ConfigSettings config = Config.readConfig();
+                        config.setOpen(text.equals("open"));
+                        boolean b = Config.saveConfig(config);
+                        if (b) {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                        } else {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                        }
+
+                        return StepResult.end();
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
+                        return StepResult.end();
+                    }
                 })
                 .build();
 

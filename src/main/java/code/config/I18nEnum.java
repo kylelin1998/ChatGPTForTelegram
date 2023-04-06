@@ -29,6 +29,8 @@ public enum I18nEnum {
     Upgrade("upgrade"),
     UpdateSucceeded("update_succeeded"),
     UpdateFailed("update_failed"),
+    Open("open"),
+    Close("close"),
 
     LanguageList("language_list"),
     ChangeLanguageFinish("change_language_finish"),
@@ -62,6 +64,8 @@ public enum I18nEnum {
     ImageDescriptionTextCharacterCountMoreThan("image_description_text_character_count_more_than"),
 
     ChatHasTooManyConversations("chat_has_too_many_conversations"),
+    SetOpenStatus("set_open_status"),
+    ChooseOpenStatus("choose_open_status"),
 
     ;
 

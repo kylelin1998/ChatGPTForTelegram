@@ -20,8 +20,13 @@ public class ConfigSettings {
     @JSONField(name = "bot_admin_id")
     @ConfigField(isNotNull = true)
     private String botAdminId;
+
+    @ConfigField(isNotNull = true)
+    private Boolean open;
     @JSONField(name = "permission_chat_id_array")
     private String[] permissionChatIdArray;
+    @JSONField(name = "block_chat_id_array")
+    private String[] blockChatIdArray;
 
     @JSONField(name = "bot_name")
     @ConfigField(isNotNull = true)

@@ -87,22 +87,31 @@ public class StepsCenter {
     }
 
     private static void cmdHandle(Command command, boolean isCall, StepsChatSession stepsChatSession, CallbackData callbackData) {
-        boolean permission = false;
+        Boolean open = GlobalConfig.getOpen();
+        if (!open) {
+            boolean permission = false;
 
-        String botAdminId = GlobalConfig.getBotAdminId();
-        if (botAdminId.equals(stepsChatSession.getChatId()) || botAdminId.equals(stepsChatSession.getFromId())) {
-            permission = true;
-        }
-        for (String s : GlobalConfig.getPermissionChatIdArray()) {
-            if (s.equals(stepsChatSession.getChatId()) || s.equals(stepsChatSession.getFromId())) {
+            String botAdminId = GlobalConfig.getBotAdminId();
+            if (botAdminId.equals(stepsChatSession.getChatId()) || botAdminId.equals(stepsChatSession.getFromId())) {
                 permission = true;
-                break;
+            }
+            for (String s : GlobalConfig.getPermissionChatIdArray()) {
+                if (s.equals(stepsChatSession.getChatId()) || s.equals(stepsChatSession.getFromId())) {
+                    permission = true;
+                    break;
+                }
+            }
+
+            if (!permission) {
+                MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "你没有使用权限， 不过你可以自己搭建一个\nhttps://github.com/kylelin1998/ChatGPTForTelegram", false);
+                return;
             }
         }
-
-        if (!permission) {
-            MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "你没有使用权限， 不过你可以自己搭建一个\nhttps://github.com/kylelin1998/ChatGPTForTelegram", false);
-            return;
+        for (String s : GlobalConfig.getBlockChatIdArray()) {
+            if (s.equals(stepsChatSession.getChatId()) || s.equals(stepsChatSession.getFromId())) {
+                MessageHandle.sendMessage(stepsChatSession.getChatId(), stepsChatSession.getReplyToMessageId(), "系统限制， 你没有使用权限， 不过你可以自己搭建一个\nhttps://github.com/kylelin1998/ChatGPTForTelegram", false);
+                return;
+            }
         }
 
         if (null != callbackData){
