@@ -38,5 +38,8 @@ public class ConfigSettings {
     @JSONField(name = "gpt_token")
     @ConfigField(isNotNull = true)
     private String gptToken;
+    @JSONField(name = "gpt_model")
+    @ConfigField(isNotNull = true)
+    private String gptModel;
 
 }

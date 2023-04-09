@@ -66,6 +66,9 @@ public enum I18nEnum {
     ChatHasTooManyConversations("chat_has_too_many_conversations"),
     SetOpenStatus("set_open_status"),
     ChooseOpenStatus("choose_open_status"),
+    Model("model"),
+    ChangeModel("change_model"),
+    PleaseSendMeTheModelYouWantToChange("please_send_me_the_model_you_want_to_change"),
 
     ;
 

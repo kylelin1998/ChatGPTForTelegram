@@ -1,6 +1,7 @@
 package code.config;
 
 import code.util.ExceptionUtil;
+import code.util.gpt.GPTModel;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONReader;
@@ -70,6 +71,10 @@ public class Config {
         String[] permissionChatIdArray = configSettings.getPermissionChatIdArray();
         if (null == permissionChatIdArray) {
             configSettings.setPermissionChatIdArray(new String[]{});
+        }
+        String gptModel = configSettings.getGptModel();
+        if (StringUtils.isBlank(gptModel)) {
+            configSettings.setGptModel(GPTModel.Gpt3_5Turbo.getModel());
         }
         return configSettings;
     }

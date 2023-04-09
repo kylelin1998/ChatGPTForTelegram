@@ -15,6 +15,7 @@ public enum Command {
     Admin("admin"),
     Image("image"),
 
+    ChangeModel("change_model"),
     SetOpenStatus("set_open_status"),
     UpdateConfig("uc"),
     Language("language"),

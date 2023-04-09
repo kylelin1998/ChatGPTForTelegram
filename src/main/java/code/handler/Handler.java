@@ -81,7 +81,7 @@ public class Handler {
                 }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -182,7 +182,7 @@ public class Handler {
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, "...");
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(),  questionText, "...");
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -283,7 +283,7 @@ public class Handler {
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsChatMessageLimitMode));
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsChatMessageLimitMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     Object messagesObj = context.get("messages");
@@ -385,7 +385,7 @@ public class Handler {
 
                     String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
 
-                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsNoneOfMessageContextMode));
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsNoneOfMessageContextMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
                     List<GPTMessage> messages = Collections.synchronizedList(new ArrayList<>());
@@ -515,6 +515,7 @@ public class Handler {
 
                     List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
                             .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.ChangeModel), StepsCenter.buildCallbackData(true, session, Command.ChangeModel, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus), StepsCenter.buildCallbackData(true, session, Command.SetOpenStatus, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.UpdateConfig), StepsCenter.buildCallbackData(true, session, Command.UpdateConfig, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
@@ -525,6 +526,9 @@ public class Handler {
                     StringBuilder builder = new StringBuilder();
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus) + ": ");
                     builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
+                    builder.append("\n");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.Model) + ": ");
+                    builder.append(config.getGptModel());
 
                     MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(),  buttons);
 
@@ -574,6 +578,39 @@ public class Handler {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
                         return StepResult.end();
                     }
+                })
+                .build();
+
+        // Change model
+        StepsBuilder
+                .create()
+                .bindCommand(Command.ChangeModel)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeTheModelYouWantToChange), false);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+
+                    ConfigSettings config = Config.readConfig();
+                    config.setGptModel(text);
+                    boolean b = Config.saveConfig(config);
+                    if (b) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                    }
+                    return StepResult.ok();
                 })
                 .build();
 
