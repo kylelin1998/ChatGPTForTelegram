@@ -43,7 +43,7 @@ public class GPTUtil {
                     .setHeader("Authorization", "Bearer " + Token)
                     .bodyString(JSON.toJSONString(parameter), ContentType.APPLICATION_JSON)
                     .connectTimeout(Timeout.ofSeconds(30))
-                    .responseTimeout(Timeout.ofSeconds(30));
+                    .responseTimeout(Timeout.ofSeconds(60));
             requestProxyConfig.viaProxy(request);
             Response response = request.execute();
 
