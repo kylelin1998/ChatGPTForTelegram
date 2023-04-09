@@ -6,8 +6,6 @@
 ## 介绍
 ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于自己的机器人
 
-目前机器人基于gpt-3.5-turbo
-
 使用机器人可以让你轻松进行对话， 后续机器人的更新升级一个命令即可搞定， 无需再上服务器进行升级机器人
 
 ## 部署
@@ -36,6 +34,7 @@ Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
   "bot_token": "xxxx",
   "debug": false,
   "gpt_token": "xxxxx",
+  "gpt_model": "gpt-3.5-turbo",
   "permission_chat_id_array": [
     "xxxx"
   ],

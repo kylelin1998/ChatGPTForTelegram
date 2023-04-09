@@ -4,7 +4,7 @@
 [![release](https://img.shields.io/github/v/release/kylelin1998/ChatGPTForTelegram)](https://github.com/kylelin1998/ChatGPTForTelegram/releases/latest)
 
 ## Introduction
-The ChatGPT Telegram Bot based on OpenAI's ChatGPT turbo3.5. It can let you easily to chat or ask.
+The ChatGPT Telegram Bot based on OpenAI's ChatGPT. It can let you easily to chat or ask.
 
 The bot has some commands that consider different scenes for chatting.
 
@@ -32,6 +32,7 @@ Then create another folder named config and the config folder must contains a js
   "bot_token": "xxxx",
   "debug": false,
   "gpt_token": "xxxxx",
+  "gpt_model": "gpt-3.5-turbo",
   "permission_chat_id_array": [
     "xxxx"
   ],
