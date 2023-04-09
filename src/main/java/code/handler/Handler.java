@@ -51,7 +51,7 @@ public class Handler {
         GPTChatParameter parameter = new GPTChatParameter();
 //        parameter.setUser(fromId);
         parameter.setStream(true);
-        parameter.setModel("gpt-3.5-turbo");
+        parameter.setModel(GlobalConfig.getGptModel());
         parameter.setMessages(messages);
 
         return parameter;
@@ -117,6 +117,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
                             MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
@@ -218,6 +219,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.end();
                     }
@@ -319,6 +321,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
@@ -414,6 +417,7 @@ public class Handler {
                     }
 
                     if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }

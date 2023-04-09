@@ -10,4 +10,6 @@ public class GPTChatResponse {
 
     private String content;
 
+    private String response;
+
 }
