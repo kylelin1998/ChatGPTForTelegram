@@ -601,6 +601,7 @@ public class Handler {
                     }
 
                     MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeTheModelYouWantToChange), false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "gpt-4, gpt-4-0314, gpt-4-32k, gpt-4-32k-0314, gpt-3.5-turbo, gpt-3.5-turbo-0301", false);
                     return StepResult.ok();
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
