@@ -28,7 +28,11 @@ public class Config {
 
     public static String SettingsPath = CurrentDir + "/config.json";
 
+    public static String TempDir = CurrentDir + "/temp";
+
     public static String DBPath = CurrentDir + "/db.db";
+
+    public static String FFMPEGPath = CurrentDir + "/ffmpeg/" + (System.getProperty("os.name").toLowerCase().contains("windows") ? "bin/ffmpeg.exe" : "ffmpeg");
 
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
@@ -47,6 +51,7 @@ public class Config {
         list.add(UserDir);
         list.add(CurrentDir);
         list.add(SettingsPath);
+        list.add(TempDir);
         log.info(list.stream().collect(Collectors.joining("\n")));
     }
 

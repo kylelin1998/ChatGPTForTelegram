@@ -89,11 +89,10 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         if (null == message) {
             return;
         }
-        String text = message.getText();
-        if (StringUtils.isNotEmpty(text)) {
+        if (StringUtils.isNotEmpty(message.getText()) || null != message.getVoice()) {
             boolean handle = StepsCenter.cmdHandle(StepsChatSessionBuilder.create(message).build());
             if (!handle) {
-                StepsCenter.textHandle(StepsChatSessionBuilder.create(message).build());
+                StepsCenter.messageHandle(StepsChatSessionBuilder.create(message).build());
             }
         }
     }

@@ -31,6 +31,7 @@ public enum I18nEnum {
     UpdateFailed("update_failed"),
     Open("open"),
     Close("close"),
+    Processing("processing"),
 
     LanguageList("language_list"),
     ChangeLanguageFinish("change_language_finish"),

@@ -4,20 +4,25 @@ import code.config.*;
 import code.handler.steps.*;
 import code.util.*;
 import code.util.gpt.GPTRole;
+import code.util.gpt.GPTTranscriptionsModel;
 import code.util.gpt.parameter.GPTChatParameter;
 import code.util.gpt.parameter.GPTCreateImageParameter;
 import code.util.gpt.parameter.GPTMessage;
+import code.util.gpt.parameter.GPTTranscriptionsParameter;
 import code.util.gpt.response.GPTChatResponse;
 import code.util.gpt.response.GPTCreateImageResponse;
+import code.util.gpt.response.GPTTranscriptionsResponse;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Voice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,10 +31,13 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static code.Main.Bot;
 import static code.Main.GlobalConfig;
 
 @Slf4j
 public class Handler {
+
+    private final static int CharacterLength = 100;
 
     private static boolean isAdmin(String fromId) {
         return GlobalConfig.getBotAdminId().equals(fromId);
@@ -57,6 +65,43 @@ public class Handler {
         return parameter;
     }
 
+    private static boolean voiceHandle(StepsChatSession session) {
+        Voice voice = session.getVoice();
+        if (null == voice) {
+            return true;
+        }
+        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Processing), false);
+        String ogg = Config.TempDir + "/" + voice.getFileUniqueId() + ".ogg";
+        String mp3 = Config.TempDir + "/" + voice.getFileUniqueId() + ".mp3";
+        try {
+            GetFile getFile = new GetFile();
+            getFile.setFileId(voice.getFileId());
+            File file = Bot.execute(getFile);
+            Bot.downloadFile(file, new java.io.File(ogg));
+            FFmpegUtil.oggFileToMp3(Config.FFMPEGPath, ogg, mp3);
+
+            GPTTranscriptionsParameter parameter = new GPTTranscriptionsParameter();
+            parameter.setModel(GPTTranscriptionsModel.Whisper_1.getModel());
+            parameter.setFile(new java.io.File(mp3));
+            GPTTranscriptionsResponse response = GPTUtil.transcriptions(RequestProxyConfig.create(), parameter);
+            if (!response.isOk()) {
+                MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
+                return false;
+            }
+
+            session.setText(response.getText());
+        } catch (Exception e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
+            return false;
+        } finally {
+            new java.io.File(ogg).delete();
+            new java.io.File(mp3).delete();
+            MessageHandle.deleteMessage(message);
+        }
+        return true;
+    }
+
     public static void init() {
         // Chat
         StepsBuilder
@@ -73,13 +118,18 @@ public class Handler {
                     return StepResult.next(session.getText());
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    if (StringUtils.isBlank(session.getText())) {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
                     return StepResult.next(session.getText());
                 }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
+                    boolean result = voiceHandle(session);
+                    if (!result) {
+                        return StepResult.reject();
+                    }
+
+                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -176,12 +226,17 @@ public class Handler {
                     MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    if (StringUtils.isBlank(session.getText())) {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
+                    boolean result = voiceHandle(session);
+                    if (!result) {
+                        return StepResult.reject();
+                    }
+
+                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(),  questionText, "...");
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -272,18 +327,18 @@ public class Handler {
                     return StepResult.next(session.getText());
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    if (StringUtils.isBlank(session.getText())) {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
                         return StepResult.reject();
                     }
                     return StepResult.next(session.getText());
                 }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    if (StringUtils.isBlank(session.getText())) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                    boolean result = voiceHandle(session);
+                    if (!result) {
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
+                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsChatMessageLimitMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -381,12 +436,17 @@ public class Handler {
                     MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    if (StringUtils.isBlank(session.getText())) {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),"请发送给我想要问的问题...", false);
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > 15 ? StringUtils.substring(session.getText(), 0, 15) : session.getText()) + "...";
+                    boolean result = voiceHandle(session);
+                    if (!result) {
+                        return StepResult.reject();
+                    }
+
+                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsNoneOfMessageContextMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);

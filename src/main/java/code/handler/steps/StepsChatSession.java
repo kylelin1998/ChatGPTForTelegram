@@ -3,6 +3,7 @@ package code.handler.steps;
 import lombok.Data;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Voice;
 
 @Data
 public class StepsChatSession {
@@ -16,5 +17,6 @@ public class StepsChatSession {
     private Message message;
     private CallbackQuery callbackQuery;
     private String text;
+    private Voice voice;
 
 }

@@ -131,7 +131,7 @@ public class StepsCenter {
         });
     }
 
-    public static void textHandle(StepsChatSession stepsChatSession) {
+    public static void messageHandle(StepsChatSession stepsChatSession) {
         StepsHandler handler = StepsRegisterCenter.getPriority(stepsChatSession);
         if (null == handler) {
             return;

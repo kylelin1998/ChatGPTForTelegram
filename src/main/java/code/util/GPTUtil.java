@@ -4,19 +4,20 @@ import code.config.RequestProxyConfig;
 import code.util.gpt.GPTCallback;
 import code.util.gpt.parameter.GPTChatParameter;
 import code.util.gpt.parameter.GPTCreateImageParameter;
-import code.util.gpt.response.GPTCallbackChatContent;
-import code.util.gpt.response.GPTChatContentChoicesDelta;
-import code.util.gpt.response.GPTChatResponse;
-import code.util.gpt.response.GPTCreateImageResponse;
+import code.util.gpt.parameter.GPTTranscriptionsParameter;
+import code.util.gpt.response.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.fluent.Content;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.client5.http.fluent.Response;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.util.Timeout;
 
 import java.io.BufferedInputStream;
@@ -61,6 +62,41 @@ public class GPTUtil {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
         }
         return gptCreateImageResponse;
+    }
+
+    public static GPTTranscriptionsResponse transcriptions(RequestProxyConfig requestProxyConfig, GPTTranscriptionsParameter parameter) {
+        GPTTranscriptionsResponse gptTranscriptionsResponse = new GPTTranscriptionsResponse();
+        gptTranscriptionsResponse.setOk(false);
+        try {
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setMode(HttpMultipartMode.LEGACY);
+            builder.addBinaryBody("file", parameter.getFile(), ContentType.DEFAULT_BINARY, parameter.getFile().getName());
+            builder.addTextBody("model", parameter.getModel(), ContentType.DEFAULT_BINARY);
+            HttpEntity entity = builder.build();
+
+            Request request = Request
+                    .post("https://api.openai.com/v1/audio/transcriptions")
+                    .body(entity)
+                    .setHeader("Authorization", "Bearer " + Token)
+                    .connectTimeout(Timeout.ofSeconds(30))
+                    .responseTimeout(Timeout.ofSeconds(60));
+            requestProxyConfig.viaProxy(request);
+            Response response = request.execute();
+
+            Content content = response.returnContent();
+            String s = content.asString(StandardCharsets.UTF_8);
+            if (StringUtils.isNotBlank(s)) {
+                GPTTranscriptionsResponse gptTranscriptionsResponse2 = JSON.parseObject(s, GPTTranscriptionsResponse.class, JSONReader.Feature.SupportSmartMatch);
+                if (null != gptTranscriptionsResponse2 && StringUtils.isNotBlank(gptTranscriptionsResponse2.getText())) {
+                    gptTranscriptionsResponse2.setOk(true);
+                    return gptTranscriptionsResponse2;
+                }
+            }
+
+        } catch (Exception e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+        }
+        return gptTranscriptionsResponse;
     }
 
     public static GPTChatResponse chat(RequestProxyConfig requestProxyConfig, GPTChatParameter parameter, GPTCallback callback) {

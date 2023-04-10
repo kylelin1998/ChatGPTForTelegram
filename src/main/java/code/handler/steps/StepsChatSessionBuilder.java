@@ -36,6 +36,7 @@ public class StepsChatSessionBuilder {
         session.setText(text);
         session.setReplyToMessageId(message.getMessageId());
         session.setMessage(message);
+        session.setVoice(message.getVoice());
         return new StepsChatSessionBuilder(session);
     }
     public StepsChatSessionBuilder setText(String text) {
