@@ -15,7 +15,6 @@ import code.util.gpt.response.GPTTranscriptionsResponse;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.File;
@@ -23,10 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Voice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +33,7 @@ import static code.Main.GlobalConfig;
 @Slf4j
 public class Handler {
 
-    private final static int CharacterLength = 100;
+    private final static int CharacterLength = 150;
 
     private static boolean isAdmin(String fromId) {
         return GlobalConfig.getBotAdminId().equals(fromId);
@@ -102,6 +98,10 @@ public class Handler {
         return true;
     }
 
+    private static String getQuestionText(StepsChatSession session) {
+        return (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) + "..." : session.getText());
+    }
+
     public static void init() {
         // Chat
         StepsBuilder
@@ -119,7 +119,8 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        context.put("message2", message);
                         return StepResult.reject();
                     }
                     return StepResult.next(session.getText());
@@ -129,7 +130,7 @@ public class Handler {
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
+                    String questionText = getQuestionText(session);
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -206,10 +207,15 @@ public class Handler {
 
                     context.put("messages", messages);
 
-                    Object o = context.get("message");
-                    if (null != o) {
+                    Object message1 = context.get("message");
+                    if (null != message1) {
                         context.remove("message");
-                        MessageHandle.deleteMessage((Message) o);
+                        MessageHandle.deleteMessage((Message) message1);
+                    }
+                    Object message2 = context.get("message2");
+                    if (null != message2) {
+                        context.remove("message2");
+                        MessageHandle.deleteMessage((Message) message2);
                     }
 
                     return StepResult.reject();
@@ -227,7 +233,8 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        context.put("message2", message);
                         return StepResult.reject();
                     }
 
@@ -236,7 +243,7 @@ public class Handler {
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
+                    String questionText = getQuestionText(session);
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(),  questionText, "...");
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -307,6 +314,12 @@ public class Handler {
 
                     context.put("messages", messages);
 
+                    Object message2 = context.get("message2");
+                    if (null != message2) {
+                        context.remove("message2");
+                        MessageHandle.deleteMessage((Message) message2);
+                    }
+
                     return StepResult.end();
                 })
                 .build();
@@ -328,7 +341,8 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        context.put("message2", message);
                         return StepResult.reject();
                     }
                     return StepResult.next(session.getText());
@@ -338,7 +352,7 @@ public class Handler {
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
+                    String questionText = getQuestionText(session);
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsChatMessageLimitMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -416,10 +430,15 @@ public class Handler {
                         return StepResult.end();
                     }
 
-                    Object o = context.get("message");
-                    if (null != o) {
+                    Object message1 = context.get("message");
+                    if (null != message1) {
                         context.remove("message");
-                        MessageHandle.deleteMessage((Message) o);
+                        MessageHandle.deleteMessage((Message) message1);
+                    }
+                    Object message2 = context.get("message2");
+                    if (null != message2) {
+                        context.remove("message2");
+                        MessageHandle.deleteMessage((Message) message2);
                     }
 
                     return StepResult.reject();
@@ -437,7 +456,8 @@ public class Handler {
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(),"请发送给我想要问的问题...", false);
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        context.put("message2", message);
                         return StepResult.reject();
                     }
 
@@ -446,7 +466,7 @@ public class Handler {
                         return StepResult.reject();
                     }
 
-                    String questionText = (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) : session.getText()) + "...";
+                    String questionText = getQuestionText(session);
 
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsNoneOfMessageContextMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
@@ -500,6 +520,12 @@ public class Handler {
                         try {
                             TimeUnit.SECONDS.sleep((i + 1) * 2);
                         } catch (InterruptedException e) {}
+                    }
+
+                    Object message2 = context.get("message2");
+                    if (null != message2) {
+                        context.remove("message2");
+                        MessageHandle.deleteMessage((Message) message2);
                     }
 
                     return StepResult.reject();
