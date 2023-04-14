@@ -246,6 +246,7 @@ public class Handler {
 
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
                     context.put("message", message);
+                    session.setText(null);
                     return StepResult.next();
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
