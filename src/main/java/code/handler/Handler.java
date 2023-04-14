@@ -1,6 +1,7 @@
 package code.handler;
 
 import code.config.*;
+import code.eneity.RecordTableEntity;
 import code.handler.steps.*;
 import code.util.*;
 import code.util.gpt.GPTRole;
@@ -27,8 +28,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static code.Main.Bot;
-import static code.Main.GlobalConfig;
+import static code.Main.*;
 
 @Slf4j
 public class Handler {
@@ -116,6 +116,137 @@ public class Handler {
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
                     context.put("message", message);
                     return StepResult.next(session.getText());
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
+                        Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        context.put("message2", message);
+                        return StepResult.reject();
+                    }
+                    return StepResult.next(session.getText());
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    boolean result = voiceHandle(session);
+                    if (!result) {
+                        return StepResult.reject();
+                    }
+
+                    String questionText = getQuestionText(session);
+
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
+
+                    Object messagesObj = context.get("messages");
+                    List<GPTMessage> messages = null;
+                    if (null != messagesObj) {
+                        messages = (List<GPTMessage>) messagesObj;
+                    } else {
+                        messages = Collections.synchronizedList(new ArrayList<>());
+                    }
+
+                    AtomicInteger count = new AtomicInteger();
+                    GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
+                    GPTChatResponse response = null;
+                    for (int i = 0; i < 3; i++) {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                            if (GlobalConfig.getDebug()) {
+                                log.info(JSON.toJSONString(content));
+                            }
+                            if (!content.isDone()) {
+                                count.incrementAndGet();
+                                if (count.get() == 60) {
+                                    MessageHandle.editMessage(message, String.format("%s\n---\n%s...", questionText, content.getContent()));
+                                    count.set(0);
+                                }
+                            }
+                        }));
+                        if (response.isOk()) {
+                            break;
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep(i + 1);
+                        } catch (InterruptedException e) {}
+                    }
+
+                    if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
+                        int statusCode = response.getStatusCode();
+                        if (statusCode == 400) {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
+                            return StepResult.reject();
+                        } else {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
+                            return StepResult.reject();
+                        }
+                    }
+
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(questionText);
+                    builder.append("\n");
+                    builder.append("---");
+                    builder.append("\n");
+                    builder.append(response.getContent());
+                    builder.append("\n\n");
+                    builder.append("---");
+                    builder.append("\n");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+
+                    for (int i = 0; i < 3; i++) {
+                        if (MessageHandle.editMessage(message, builder.toString())) {
+                            break;
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep((i + 1) * 2);
+                        } catch (InterruptedException e) {}
+                    }
+
+                    GPTMessage gptMessage = new GPTMessage();
+                    gptMessage.setRole(GPTRole.Assistant.getRole());
+                    gptMessage.setContent(response.getContent());
+
+                    messages.add(gptMessage);
+
+                    context.put("messages", messages);
+
+                    Object message1 = context.get("message");
+                    if (null != message1) {
+                        context.remove("message");
+                        MessageHandle.deleteMessage((Message) message1);
+                    }
+                    Object message2 = context.get("message2");
+                    if (null != message2) {
+                        context.remove("message2");
+                        MessageHandle.deleteMessage((Message) message2);
+                    }
+
+                    return StepResult.reject();
+                })
+                .build();
+
+        // Playback
+        StepsBuilder
+                .create()
+                .bindCommand(Command.Playback)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (StringUtils.isBlank(text)) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我要重放的别名", false);
+                        return StepResult.end();
+                    }
+                    RecordTableEntity recordTableEntity = RecordTableRepository.selectOneByAlias(text, session.getFromId());
+                    if (null == recordTableEntity) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), String.format("没有别名为: %s 的录制对话", text), false);
+                        return StepResult.end();
+                    }
+                    context.put("messages", Collections.synchronizedList(JSON.parseArray(recordTableEntity.getChatTemplateJson(), GPTMessage.class)));
+
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
+                    context.put("message", message);
+                    return StepResult.next();
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
@@ -568,6 +699,246 @@ public class Handler {
                     }
 
                     return StepResult.end();
+                })
+                .build();
+
+        // Record
+        StepsBuilder
+                .create()
+                .bindCommand(Command.Record)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "已开启录制对话， 请先跟机器人模拟对话， 结束录制请发送 end_record 给我", false);
+                    return StepResult.next(session.getText());
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (StringUtils.isBlank(session.getText()) && null == session.getVoice()) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeAProblemThatYouWantToAsk), false);
+                        return StepResult.reject();
+                    }
+                    return StepResult.next(session.getText());
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    boolean result = voiceHandle(session);
+                    if (!result) {
+                        return StepResult.reject();
+                    }
+
+                    Object messagesObj = context.get("messages");
+                    List<GPTMessage> messages = null;
+                    if (null != messagesObj) {
+                        messages = (List<GPTMessage>) messagesObj;
+                    } else {
+                        messages = Collections.synchronizedList(new ArrayList<>());
+                    }
+                    if ("end_record".equals(session.getText()) && messages.size() > 0) {
+                        return StepResult.next();
+                    }
+
+                    String questionText = getQuestionText(session);
+
+                    String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
+
+                    AtomicInteger count = new AtomicInteger();
+                    GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
+                    GPTChatResponse response = null;
+                    for (int i = 0; i < 3; i++) {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                            if (GlobalConfig.getDebug()) {
+                                log.info(JSON.toJSONString(content));
+                            }
+                            if (!content.isDone()) {
+                                count.incrementAndGet();
+                                if (count.get() == 60) {
+                                    MessageHandle.editMessage(message, String.format("%s\n---\n%s...", questionText, content.getContent()));
+                                    count.set(0);
+                                }
+                            }
+                        }));
+                        if (response.isOk()) {
+                            break;
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep(i + 1);
+                        } catch (InterruptedException e) {}
+                    }
+
+                    if (!response.isOk()) {
+                        log.warn(JSON.toJSONString(response));
+                        int statusCode = response.getStatusCode();
+                        if (statusCode == 400) {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
+                            return StepResult.reject();
+                        } else {
+                            MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
+                            return StepResult.reject();
+                        }
+                    }
+
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(questionText);
+                    builder.append("\n");
+                    builder.append("---");
+                    builder.append("\n");
+                    builder.append(response.getContent());
+                    builder.append("\n\n");
+                    builder.append("---");
+                    builder.append("\n");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+
+                    for (int i = 0; i < 3; i++) {
+                        if (MessageHandle.editMessage(message, builder.toString())) {
+                            break;
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep((i + 1) * 2);
+                        } catch (InterruptedException e) {}
+                    }
+
+                    GPTMessage gptMessage = new GPTMessage();
+                    gptMessage.setRole(GPTRole.Assistant.getRole());
+                    gptMessage.setContent(response.getContent());
+
+                    messages.add(gptMessage);
+
+                    context.put("messages", messages);
+
+                    return StepResult.reject();
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我这段录制对话的别名， 在调用时需要用到", false);
+                    return StepResult.ok();
+                }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (StringUtils.isBlank(text) || text.length() > 10) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "别名不合法， 长度需要保持在10个字符以内， 请重新发送给我", false);
+                        return StepResult.reject();
+                    }
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我这段录制对话的解释， 显示列表时需要用到", false);
+                    context.put("alias", text);
+                    return StepResult.ok();
+                } , (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (StringUtils.isBlank(text) || text.length() > 100) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "别名解释不合法， 别名解释长度需要保持在100个字符以内， 请重新发送给我", false);
+                        return StepResult.reject();
+                    }
+                    String alias = (String) context.get("alias");
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在保存...", false);
+
+                    Object messagesObj = context.get("messages");
+                    List<GPTMessage> messages = (List<GPTMessage>) messagesObj;
+
+                    RecordTableEntity recordTableEntity = new RecordTableEntity();
+                    recordTableEntity.setId(StringUtils.remove(UUID.randomUUID().toString(), "-"));
+                    recordTableEntity.setRecordAlias(alias);
+                    recordTableEntity.setRecordExplains(text);
+                    recordTableEntity.setChatId(session.getFromId());
+                    recordTableEntity.setCreateTime(System.currentTimeMillis());
+                    recordTableEntity.setChatTemplateJson(JSON.toJSONString(messages));
+
+                    Boolean insert = RecordTableRepository.insert(recordTableEntity);
+                    if (null != insert && insert) {
+                        MessageHandle.editMessage(message, "保存成功");
+                    } else {
+                        MessageHandle.editMessage(message, "保存失败");
+                    }
+                    return StepResult.ok();
+                })
+                .build();
+
+        // Record list
+        StepsBuilder
+                .create()
+                .bindCommand(Command.RecordList)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    List<RecordTableEntity> recordTableEntityList = RecordTableRepository.selectListByChatId(session.getFromId());
+                    if (recordTableEntityList.size() > 0) {
+                        StringBuilder builder = new StringBuilder();
+                        InlineKeyboardButtonBuilder buttonBuilder = InlineKeyboardButtonBuilder.create();
+                        for (RecordTableEntity recordTableEntity : recordTableEntityList) {
+                            builder.append("录制别名: ");
+                            builder.append(recordTableEntity.getRecordAlias());
+                            builder.append("\n");
+                            builder.append("录制解释: ");
+                            builder.append(recordTableEntity.getRecordExplains());
+                            builder.append("\n");
+
+                            buttonBuilder.add(recordTableEntity.getRecordAlias(), StepsCenter.buildCallbackData(true, session, Command.GetRecord, recordTableEntity.getId()));
+                        }
+                        MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), buttonBuilder.build());
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                    }
+
+                    return StepResult.ok();
+                })
+                .build();
+
+        // Get record
+        StepsBuilder
+                .create()
+                .bindCommand(Command.GetRecord)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    RecordTableEntity recordTableEntity = RecordTableRepository.selectOne(session.getText(), session.getFromId());
+                    if (null != recordTableEntity) {
+                        StringBuilder builder = new StringBuilder();
+                        InlineKeyboardButtonBuilder buttonBuilder = InlineKeyboardButtonBuilder.create();
+
+                        builder.append("录制别名: ");
+                        builder.append(recordTableEntity.getRecordAlias());
+                        builder.append("\n");
+                        builder.append("录制解释: ");
+                        builder.append(recordTableEntity.getRecordExplains());
+                        builder.append("\n");
+
+                        buttonBuilder.add("删除", StepsCenter.buildCallbackData(true, session, Command.DeleteRecord, recordTableEntity.getId()));
+
+                        MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), buttonBuilder.build());
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                    }
+
+                    return StepResult.ok();
+                })
+                .build();
+
+        // Delete record
+        StepsBuilder
+                .create()
+                .bindCommand(Command.DeleteRecord)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    RecordTableEntity recordTableEntity = RecordTableRepository.selectOne(session.getText(), session.getFromId());
+                    if (null != recordTableEntity) {
+                        Boolean delete = RecordTableRepository.delete(session.getText(), session.getFromId());
+                        if (null != delete && delete) {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "删除成功", false);
+                        } else {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "删除失败", false);
+                        }
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                    }
+
+                    return StepResult.ok();
                 })
                 .build();
 

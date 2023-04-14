@@ -15,6 +15,12 @@ public enum Command {
     Admin("admin"),
     Image("image"),
 
+    Record("record"),
+    Playback("p"),
+    RecordList("record_list"),
+    GetRecord("get_record"),
+    DeleteRecord("delete_record"),
+
     ChangeModel("change_model"),
     SetOpenStatus("set_open_status"),
     UpdateConfig("uc"),

@@ -9,6 +9,7 @@ import code.handler.Handler;
 import code.handler.I18nHandle;
 import code.handler.MessageHandle;
 import code.repository.I18nTableRepository;
+import code.repository.RecordTableRepository;
 import code.util.ExceptionUtil;
 import code.util.GPTUtil;
 import code.util.ProgramUtil;
@@ -28,6 +29,7 @@ public class Main {
     public static volatile CommandsHandler Bot = null;
     public static volatile ConfigSettings GlobalConfig = Config.readConfig();
     public static volatile code.repository.I18nTableRepository I18nTableRepository = new I18nTableRepository();
+    public static volatile code.repository.RecordTableRepository RecordTableRepository = new RecordTableRepository();
 
     public static void main(String[] args) throws InterruptedException {
         Unirest
