@@ -991,6 +991,13 @@ public class Handler {
                     builder.append("\n");
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.Model) + ": ");
                     builder.append(config.getGptModel());
+                    builder.append("\n\n");
+                    Properties properties = System.getProperties();
+                    builder.append("os.name: ");
+                    builder.append(properties.getProperty("os.name"));
+                    builder.append("\n");
+                    builder.append("os.arch: ");
+                    builder.append(properties.getProperty("os.arch"));
 
                     MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(),  buttons);
 
