@@ -237,12 +237,12 @@ public class Handler {
                 .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     String text = session.getText();
                     if (StringUtils.isBlank(text)) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我要重放的别名", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeThePlaybackAlias), false);
                         return StepResult.end();
                     }
                     RecordTableEntity recordTableEntity = RecordTableRepository.selectOneByAlias(text, session.getFromId());
                     if (null == recordTableEntity) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), String.format("没有别名为: %s 的录制对话", text), false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.XXXNotFound, text), false);
                         return StepResult.end();
                     }
                     context.put("messages", Collections.synchronizedList(JSON.parseArray(recordTableEntity.getChatTemplateJson(), GPTMessage.class)));
@@ -716,7 +716,7 @@ public class Handler {
                     MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
                 })
                 .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "已开启录制对话， 请先跟机器人模拟对话， 结束录制请发送 end_record 给我", false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.RecordModeOpened), false);
                     return StepResult.next(session.getText());
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
@@ -813,25 +813,25 @@ public class Handler {
 
                     return StepResult.reject();
                 }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
-                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我这段录制对话的别名， 在调用时需要用到", false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeRecordAlias), false);
                     return StepResult.ok();
                 }, (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     String text = session.getText();
                     if (StringUtils.isBlank(text) || text.length() > 10) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "别名不合法， 长度需要保持在10个字符以内， 请重新发送给我", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.InvalidAlias), false);
                         return StepResult.reject();
                     }
-                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "请发送给我这段录制对话的解释， 显示列表时需要用到", false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeRecordExplanations), false);
                     context.put("alias", text);
                     return StepResult.ok();
                 } , (StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
                     String text = session.getText();
                     if (StringUtils.isBlank(text) || text.length() > 100) {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "别名解释不合法， 别名解释长度需要保持在100个字符以内， 请重新发送给我", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.InvalidExplanations), false);
                         return StepResult.reject();
                     }
                     String alias = (String) context.get("alias");
-                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在保存...", false);
+                    Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.Saving), false);
 
                     Object messagesObj = context.get("messages");
                     List<GPTMessage> messages = (List<GPTMessage>) messagesObj;
@@ -846,9 +846,9 @@ public class Handler {
 
                     Boolean insert = RecordTableRepository.insert(recordTableEntity);
                     if (null != insert && insert) {
-                        MessageHandle.editMessage(message, "保存成功");
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.SaveSucceeded));
                     } else {
-                        MessageHandle.editMessage(message, "保存失败");
+                        MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.SaveFailed));
                     }
                     return StepResult.ok();
                 })
@@ -869,10 +869,10 @@ public class Handler {
                         StringBuilder builder = new StringBuilder();
                         InlineKeyboardButtonBuilder buttonBuilder = InlineKeyboardButtonBuilder.create();
                         for (RecordTableEntity recordTableEntity : recordTableEntityList) {
-                            builder.append("录制别名: ");
+                            builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.RecordAlias) + ": ");
                             builder.append(recordTableEntity.getRecordAlias());
                             builder.append("\n");
-                            builder.append("录制解释: ");
+                            builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.RecordExplanations) + ": ");
                             builder.append(recordTableEntity.getRecordExplains());
                             builder.append("\n");
 
@@ -880,7 +880,7 @@ public class Handler {
                         }
                         MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), buttonBuilder.build());
                     } else {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouCanUseRecordToStartRecoding), false);
                     }
 
                     return StepResult.ok();
@@ -902,10 +902,10 @@ public class Handler {
                         StringBuilder builder = new StringBuilder();
                         InlineKeyboardButtonBuilder buttonBuilder = InlineKeyboardButtonBuilder.create();
 
-                        builder.append("录制别名: ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.RecordAlias) + ": ");
                         builder.append(recordTableEntity.getRecordAlias());
                         builder.append("\n");
-                        builder.append("录制解释: ");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.RecordExplanations) + ": ");
                         builder.append(recordTableEntity.getRecordExplains());
                         builder.append("\n");
 
@@ -913,7 +913,7 @@ public class Handler {
 
                         MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(), buttonBuilder.build());
                     } else {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouCanUseRecordToStartRecoding), false);
                     }
 
                     return StepResult.ok();
@@ -934,12 +934,12 @@ public class Handler {
                     if (null != recordTableEntity) {
                         Boolean delete = RecordTableRepository.delete(session.getText(), session.getFromId());
                         if (null != delete && delete) {
-                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "删除成功", false);
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.DeleteSucceeded), false);
                         } else {
-                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "删除失败", false);
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.DeleteFailed), false);
                         }
                     } else {
-                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "你还没有录制对话， 可以使用 /record 命令进行录制", false);
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouCanUseRecordToStartRecoding), false);
                     }
 
                     return StepResult.ok();
@@ -1036,7 +1036,7 @@ public class Handler {
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel), StepsCenter.buildCallbackData(false, session, Command.SetVoiceStatus, "cancel"))
                             .build();
 
-                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.ChooseOpenStatus),  buttons);
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.ChooseVoiceStatus),  buttons);
                     return StepResult.ok();
                 })
                 .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
@@ -1046,7 +1046,10 @@ public class Handler {
                             java.io.File file = new java.io.File(Config.FFMPEGDir);
                             java.io.File file2 = new java.io.File(Config.FFMPEGPath);
                             if (!file.exists() || !file2.exists()) {
-                                Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在下载 ffmpeg 程序, 语音功能需要...", false);
+                                if (file.exists()) {
+                                    file.delete();
+                                }
+                                Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.DownloadingXXX, "FFMPEG"), false);
 
                                 FfmpegDownloadUrl ffmpegDownloadUrl = FfmpegDownloadUrl.getFfmpegDownloadUrl();
 
@@ -1070,7 +1073,7 @@ public class Handler {
                                 );
 
                                 if (b) {
-                                    MessageHandle.editMessage(message, "正在解压...");
+                                    MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Unzipping));
                                     switch (ffmpegDownloadUrl) {
                                         case Windows:
                                             try {

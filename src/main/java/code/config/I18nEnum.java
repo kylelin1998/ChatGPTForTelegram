@@ -72,6 +72,24 @@ public enum I18nEnum {
     PleaseSendMeTheModelYouWantToChange("please_send_me_the_model_you_want_to_change"),
 
     SetVoiceStatus("set_voice_status"),
+    Unzipping("unzipping"),
+    PleaseSendMeThePlaybackAlias("please_send_me_the_playback_alias"),
+    XXXNotFound("xxx_not_found"),
+    RecordModeOpened("record_mode_opened"),
+    PleaseSendMeRecordAlias("please_send_me_record_alias"),
+    InvalidAlias("invalid_alias"),
+    PleaseSendMeRecordExplanations("Please_send_me_record_explanations"),
+    InvalidExplanations("invalid_explanations"),
+    Saving("saving"),
+    SaveSucceeded("save_succeeded"),
+    SaveFailed("save_failed"),
+    RecordAlias("record_alias"),
+    RecordExplanations("record_explanations"),
+    YouCanUseRecordToStartRecoding("you_can_use_record_to_start_recoding"),
+    DeleteSucceeded("delete_succeeded"),
+    DeleteFailed("delete_failed"),
+    ChooseVoiceStatus("choose_voice_status"),
+    DownloadingXXX("downloading_xxx"),
 
     ;
 
