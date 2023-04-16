@@ -4,6 +4,7 @@ import code.config.*;
 import code.eneity.RecordTableEntity;
 import code.handler.steps.*;
 import code.util.*;
+import code.util.ffmpeg.FfmpegDownloadUrl;
 import code.util.gpt.GPTRole;
 import code.util.gpt.GPTTranscriptionsModel;
 import code.util.gpt.parameter.GPTChatParameter;
@@ -23,6 +24,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Voice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +88,8 @@ public class Handler {
             }
 
             session.setText(response.getText());
+
+            MessageHandle.deleteMessage(message);
         } catch (Exception e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
             MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
@@ -93,7 +97,6 @@ public class Handler {
         } finally {
             new java.io.File(ogg).delete();
             new java.io.File(mp3).delete();
-            MessageHandle.deleteMessage(message);
         }
         return true;
     }
@@ -977,6 +980,7 @@ public class Handler {
 
                     List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
                             .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetVoiceStatus), StepsCenter.buildCallbackData(true, session, Command.SetVoiceStatus, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.ChangeModel), StepsCenter.buildCallbackData(true, session, Command.ChangeModel, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus), StepsCenter.buildCallbackData(true, session, Command.SetOpenStatus, null))
                             .add(I18nHandle.getText(session.getFromId(), I18nEnum.UpdateConfig), StepsCenter.buildCallbackData(true, session, Command.UpdateConfig, null))
@@ -986,6 +990,9 @@ public class Handler {
                     ConfigSettings config = Config.readConfig();
 
                     StringBuilder builder = new StringBuilder();
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetVoiceStatus) + ": ");
+                    builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
+                    builder.append("\n");
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus) + ": ");
                     builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
                     builder.append("\n");
@@ -993,6 +1000,8 @@ public class Handler {
                     builder.append(config.getGptModel());
                     builder.append("\n\n");
                     Properties properties = System.getProperties();
+                    builder.append("---");
+                    builder.append("\n");
                     builder.append("os.name: ");
                     builder.append(properties.getProperty("os.name"));
                     builder.append("\n");
@@ -1002,6 +1011,118 @@ public class Handler {
                     MessageHandle.sendInlineKeyboard(session.getChatId(), builder.toString(),  buttons);
 
                     return StepResult.end();
+                })
+                .build();
+
+        // Set voice status
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetVoiceStatus)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
+                            .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Open), StepsCenter.buildCallbackData(false, session, Command.SetVoiceStatus, "open"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Close), StepsCenter.buildCallbackData(false, session, Command.SetVoiceStatus, "close"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel), StepsCenter.buildCallbackData(false, session, Command.SetVoiceStatus, "cancel"))
+                            .build();
+
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.ChooseOpenStatus),  buttons);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (text.equals("open") || text.equals("close")) {
+                        if (text.equals("open")) {
+                            java.io.File file = new java.io.File(Config.FFMPEGDir);
+                            java.io.File file2 = new java.io.File(Config.FFMPEGPath);
+                            if (!file.exists() || !file2.exists()) {
+                                Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), "正在下载 ffmpeg 程序, 语音功能需要...", false);
+
+                                FfmpegDownloadUrl ffmpegDownloadUrl = FfmpegDownloadUrl.getFfmpegDownloadUrl();
+
+                                AtomicInteger count = new AtomicInteger();
+                                String originName = ffmpegDownloadUrl.getUrl().substring(ffmpegDownloadUrl.getUrl().lastIndexOf("/") + 1);
+                                String temp = Config.CurrentDir + java.io.File.separator + originName;
+                                log.info("temp: " + temp);
+                                boolean b = DownloadUtil.download(
+                                        RequestProxyConfig.create(),
+                                        ffmpegDownloadUrl.getUrl(),
+                                        temp,
+                                        (String var1, String var2, Long var3, Long var4) -> {
+                                            if ((var4 - var3) > 0) {
+                                                count.incrementAndGet();
+                                                if (count.get() == 1000) {
+                                                    MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloaded, BytesUtil.toDisplayStr(var3), BytesUtil.toDisplayStr(var4)));
+                                                    count.set(0);
+                                                }
+                                            }
+                                        }
+                                );
+
+                                if (b) {
+                                    MessageHandle.editMessage(message, "正在解压...");
+                                    switch (ffmpegDownloadUrl) {
+                                        case Windows:
+                                            try {
+                                                CompressUtil.unzip(temp, new java.io.File(Config.CurrentDir));
+                                                new java.io.File(Config.CurrentDir + java.io.File.separator + StringUtils.removeEnd(originName, ".zip")).renameTo(new java.io.File(Config.FFMPEGDir));
+                                            } catch (IOException e) {
+                                                log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                                                MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                                                return StepResult.end();
+                                            } finally {
+                                                new java.io.File(temp).delete();
+                                            }
+                                            break;
+                                        default:
+                                            try {
+                                                CompressUtil.tarXZUnArchiver(temp, Config.CurrentDir);
+                                                java.io.File currentFile = new java.io.File(Config.CurrentDir);
+                                                for (java.io.File listFile : currentFile.listFiles()) {
+                                                    String name = listFile.getName();
+                                                    if (name.contains("ffmpeg") && name.contains("static") && !name.contains("tar.xz")) {
+                                                        listFile.renameTo(new java.io.File(Config.FFMPEGDir));
+                                                        break;
+                                                    }
+                                                }
+
+                                            } finally {
+                                                new java.io.File(temp).delete();
+                                            }
+                                            break;
+                                    }
+                                } else {
+                                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                                    return StepResult.end();
+                                }
+                            }
+
+                        }
+
+                        ConfigSettings config = Config.readConfig();
+                        config.setOpen(text.equals("open"));
+                        boolean b = Config.saveConfig(config);
+                        if (b) {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                        } else {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                        }
+
+                        return StepResult.end();
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
+                        return StepResult.end();
+                    }
                 })
                 .build();
 

@@ -11,7 +11,6 @@ import org.apache.hc.core5.util.Timeout;
 
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +40,7 @@ public class DownloadUtil {
                     .connectTimeout((int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS))
                     ;
             requestProxyConfig.viaProxy(request);
+
             HttpResponse<File> response = request.asFile(file, StandardCopyOption.REPLACE_EXISTING);
             return response.getStatus() == 200;
         } catch (Exception e) {

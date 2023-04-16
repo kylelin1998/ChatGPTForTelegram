@@ -22,6 +22,9 @@ public class ConfigSettings {
     private String botAdminId;
 
     @ConfigField(isNotNull = true)
+    private Boolean voice;
+
+    @ConfigField(isNotNull = true)
     private Boolean open;
     @JSONField(name = "permission_chat_id_array")
     private String[] permissionChatIdArray;

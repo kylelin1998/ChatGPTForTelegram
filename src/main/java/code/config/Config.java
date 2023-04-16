@@ -22,17 +22,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Config {
 
-    private static String UserDir = System.getProperty("user.dir");
+    private final static String UserDir = System.getProperty("user.dir");
 
-    public final static String CurrentDir = (UserDir.equals("/") ? "" : UserDir) + "/config";
+    public final static String CurrentDir = (UserDir.equals("/") ? "" : UserDir) + File.separator + "config";
 
-    public static String SettingsPath = CurrentDir + "/config.json";
+    public final static String SettingsPath = CurrentDir + File.separator + "config.json";
 
-    public static String TempDir = CurrentDir + "/temp";
+    public final static String TempDir = CurrentDir + File.separator + "temp";
 
-    public static String DBPath = CurrentDir + "/db.db";
+    public final static String DBPath = CurrentDir + File.separator + "db.db";
 
-    public static String FFMPEGPath = CurrentDir + "/ffmpeg/" + (System.getProperty("os.name").toLowerCase().contains("windows") ? "bin/ffmpeg.exe" : "ffmpeg");
+    public final static String FFMPEGDir = CurrentDir + File.separator + "ffmpeg";
+    public final static String FFMPEGPath = FFMPEGDir + File.separator + (System.getProperty("os.name").toLowerCase().contains("windows") ? "bin"+File.separator+"ffmpeg.exe" : "ffmpeg");
 
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
@@ -68,6 +69,10 @@ public class Config {
         Boolean open = configSettings.getOpen();
         if (null == open) {
             configSettings.setOpen(false);
+        }
+        Boolean voice = configSettings.getVoice();
+        if (null == voice) {
+            configSettings.setVoice(false);
         }
         String[] blockChatIdArray = configSettings.getBlockChatIdArray();
         if (null == blockChatIdArray) {

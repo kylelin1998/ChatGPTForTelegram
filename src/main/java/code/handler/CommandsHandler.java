@@ -28,19 +28,6 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
     }
 
     public void start() {
-        register(new ChatCommand());
-        register(new ChatShorterCommand());
-
-        register(new AskCommand());
-        register(new AskShorterCommand());
-
-        register(new ChatMsgLimitCommand());
-        register(new NoneContextChatCommand());
-
-        register(new ImageCommand());
-
-        register(new ExitCommand());
-        register(new LanguageCommand());
         register(new HelpCommand());
         register(new StartCommand());
     }

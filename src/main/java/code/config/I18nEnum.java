@@ -71,6 +71,8 @@ public enum I18nEnum {
     ChangeModel("change_model"),
     PleaseSendMeTheModelYouWantToChange("please_send_me_the_model_you_want_to_change"),
 
+    SetVoiceStatus("set_voice_status"),
+
     ;
 
     private String key;
