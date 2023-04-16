@@ -29,7 +29,7 @@ public enum FfmpegDownloadUrl {
         String arch = properties.getProperty("os.arch");
 
         if (name.toLowerCase().contains("windows")) {
-            return LINUX_AMD64;
+            return Windows;
         } else {
             if ("amd64".equals(arch)) {
                 return LINUX_AMD64;

@@ -991,7 +991,7 @@ public class Handler {
 
                     StringBuilder builder = new StringBuilder();
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetVoiceStatus) + ": ");
-                    builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
+                    builder.append(config.getVoice() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
                     builder.append("\n");
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus) + ": ");
                     builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
@@ -1110,7 +1110,7 @@ public class Handler {
                         }
 
                         ConfigSettings config = Config.readConfig();
-                        config.setOpen(text.equals("open"));
+                        config.setVoice(text.equals("open"));
                         boolean b = Config.saveConfig(config);
                         if (b) {
                             MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
