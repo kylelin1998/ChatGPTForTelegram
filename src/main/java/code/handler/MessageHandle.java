@@ -4,6 +4,7 @@ import code.util.ExceptionUtil;
 import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -179,6 +180,13 @@ public class MessageHandle {
 
     public static Message sendMessage(SendMessage sendMessage) {
         try {
+            String text = sendMessage.getText();
+            if (StringUtils.isNotBlank(text)) {
+                text = StringUtils.replace(text, "<", "&lt;");
+                text = StringUtils.replace(text, ">", "&gt;");
+                sendMessage.setText(text);
+            }
+
             Message execute = Bot.execute(sendMessage);
             return execute;
         } catch (Exception e) {
