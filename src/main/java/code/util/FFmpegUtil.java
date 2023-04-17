@@ -40,7 +40,7 @@ public class FFmpegUtil {
         try {
             ProcessBuilder builder = new ProcessBuilder(commend);
             builder.command(commend);
-            log.info("ffmpeg commend: {}", String.join(" ", commend));
+            log.info("ffmpeg command: {}", String.join(" ", commend));
             Process p = builder.start();
 
             // 获取外部程序标准输出流
@@ -48,7 +48,7 @@ public class FFmpegUtil {
             // 获取外部程序标准错误流
             fixedThreadPool.submit(new OutputHandlerRunnable(p.getErrorStream(), true));
             int code = p.waitFor();
-            log.info("ffmpeg commend: {} result: {}", String.join(" ", commend), code);
+            log.info("ffmpeg command: {} result: {}", String.join(" ", commend), code);
 
             p.destroy();
         } catch (Exception e) {

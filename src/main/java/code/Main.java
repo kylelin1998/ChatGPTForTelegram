@@ -12,17 +12,11 @@ import code.repository.I18nTableRepository;
 import code.repository.RecordTableRepository;
 import code.util.ExceptionUtil;
 import code.util.GPTUtil;
-import code.util.ProgramUtil;
-import com.alibaba.fastjson2.JSON;
 import kong.unirest.Unirest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
-import java.io.File;
-import java.io.IOException;
 
 @Slf4j
 public class Main {
