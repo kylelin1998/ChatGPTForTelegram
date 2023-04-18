@@ -9,7 +9,9 @@ ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于�
 使用机器人可以让你轻松进行对话， 后续机器人的更新升级一个命令即可搞定， 无需再上服务器进行升级机器人
 
 ## 部署
-Youtube部署教程： https://youtu.be/Uu-0kLWsdFk
+Youtube：https://youtu.be/CiDxb1ESijQ
+
+哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
 
 机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
 
@@ -82,6 +84,9 @@ a - 单次提问
 cml - 发起消息限制对话
 nccm - 发起无上下文对话
 image - 生成图片
+record - 录制对话
+p - 重放对话
+record_list - 录制对话管理
 exit - 退出
 language - 切换语言
 admin - 管理员命令

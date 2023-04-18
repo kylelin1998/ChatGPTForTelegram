@@ -11,7 +11,9 @@ The bot has some commands that consider different scenes for chatting.
 This project is an open-source project that you can trust. Once deployed, the bot's version is easy with a single command to upgrade.
 
 ## Deploy
-Youtube deploy guide: https://youtu.be/Uu-0kLWsdFk
+Youtube：https://youtu.be/CiDxb1ESijQ
+
+哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
 
 The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
 
@@ -79,6 +81,9 @@ a - Ask a problem
 cml - The current mode is chat message limit mode
 nccm - The current mode is none of message context mode
 image - Create a image for you
+record - Record chat messages.
+p - Playback chat messages.
+record_list - Manage the record list.
 exit - Exit chat
 language - Change language
 admin - Admin
