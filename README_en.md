@@ -4,11 +4,22 @@
 [![release](https://img.shields.io/github/v/release/kylelin1998/ChatGPTForTelegram)](https://github.com/kylelin1998/ChatGPTForTelegram/releases/latest)
 
 ## Introduction
+Youtube： https://youtu.be/a_WLFtRWGzY
+
+哔哩哔哩： https://www.bilibili.com/video/BV1qX4y1z7Dt/
+
 The ChatGPT Telegram Bot based on OpenAI's ChatGPT. It can let you easily to chat or ask.
 
 The bot has some commands that consider different scenes for chatting.
 
 This project is an open-source project that you can trust. Once deployed, the bot's version is easy with a single command to upgrade.
+
+1. Support the voice chat with the bot.
+2. Added record & playback mode feature.
+3. Support text chat with the bot.
+4. Support image generation
+
+The record & playback mode allows you to record chats with the bot, then send 'end_record' to stop and save the recording. Afterward, you can playback the recorded chat. It can help your work and is a nice feature.
 
 ## Deploy
 Youtube：https://youtu.be/CiDxb1ESijQ
