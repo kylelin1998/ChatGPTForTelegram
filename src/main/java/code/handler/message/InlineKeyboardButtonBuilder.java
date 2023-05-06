@@ -1,4 +1,4 @@
-package code.handler;
+package code.handler.message;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 

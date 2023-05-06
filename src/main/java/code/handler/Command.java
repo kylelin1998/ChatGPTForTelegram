@@ -21,6 +21,7 @@ public enum Command {
     GetRecord("get_record"),
     DeleteRecord("delete_record"),
 
+    SetChatButtons("set_chat_buttons"),
     SetVoiceStatus("set_voice_status"),
     ChangeModel("change_model"),
     SetOpenStatus("set_open_status"),

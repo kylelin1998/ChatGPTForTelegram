@@ -7,7 +7,8 @@ import code.config.RequestProxyConfig;
 import code.handler.CommandsHandler;
 import code.handler.Handler;
 import code.handler.I18nHandle;
-import code.handler.MessageHandle;
+import code.handler.message.MessageHandle;
+import code.handler.store.Store;
 import code.repository.I18nTableRepository;
 import code.repository.RecordTableRepository;
 import code.util.ExceptionUtil;
@@ -31,6 +32,7 @@ public class Main {
                 .enableCookieManagement(false)
         ;
 
+        Store.init();
         new Thread(() -> {
             while (true) {
                 try {

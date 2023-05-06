@@ -1,4 +1,4 @@
-package code.handler;
+package code.handler.message;
 
 import code.util.ExceptionUtil;
 import com.alibaba.fastjson2.JSON;
@@ -74,6 +74,30 @@ public class MessageHandle {
 
     public static Message sendInlineKeyboard(String chatId, String text, InlineKeyboardButton... inlineKeyboardButtonList) {
         return sendInlineKeyboard(chatId, text, Arrays.asList(inlineKeyboardButtonList));
+    }
+
+    public static Message sendInlineKeyboardList(String chatId, String text, List<List<InlineKeyboardButton>> keyboard) {
+        return sendInlineKeyboardList(chatId, null, text, keyboard);
+    }
+
+    public static Message sendInlineKeyboardList(String chatId, Integer replyToMessageId, String text, List<List<InlineKeyboardButton>> keyboard) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(text);
+        message.setReplyToMessageId(replyToMessageId);
+        message.setDisableWebPagePreview(true);
+
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        message.setReplyMarkup(inlineKeyboardMarkup);
+
+        try {
+            return Bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+        }
+        return null;
     }
 
     public static Message sendInlineKeyboard(String chatId, String text, List<InlineKeyboardButton> inlineKeyboardButtonList) {
@@ -155,15 +179,15 @@ public class MessageHandle {
     }
 
     public static Message sendMessage(String chatId, String text, boolean webPagePreview) {
-        return sendMessage(chatId, null, text, webPagePreview, true);
+        return sendMessage(chatId, null, text, webPagePreview, true, null);
     }
     public static Message sendMessage(String chatId, String text, boolean webPagePreview, boolean notification) {
-        return sendMessage(chatId, null, text, webPagePreview, notification);
+        return sendMessage(chatId, null, text, webPagePreview, notification, null);
     }
     public static Message sendMessage(String chatId, Integer replyToMessageId, String text, boolean webPagePreview) {
-        return sendMessage(chatId, replyToMessageId, text, webPagePreview, true);
+        return sendMessage(chatId, replyToMessageId, text, webPagePreview, true, null);
     }
-    public static Message sendMessage(String chatId, Integer replyToMessageId, String text, boolean webPagePreview, boolean notification) {
+    public static Message sendMessage(String chatId, Integer replyToMessageId, String text, boolean webPagePreview, boolean notification, List<List<InlineKeyboardButton>> buttons) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setReplyToMessageId(replyToMessageId);
@@ -175,7 +199,16 @@ public class MessageHandle {
         if (!webPagePreview) {
             sendMessage.disableWebPagePreview();
         }
+        if (null != buttons && !buttons.isEmpty()) {
+            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+            inlineKeyboardMarkup.setKeyboard(buttons);
+            sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+        }
         return sendMessage(sendMessage);
+    }
+
+    public static Message sendMessage(String chatId, String text, boolean webPagePreview, List<List<InlineKeyboardButton>> buttons) {
+        return sendMessage(chatId, null, text, webPagePreview, true, null);
     }
 
     public static Message sendMessage(SendMessage sendMessage) {
@@ -201,6 +234,27 @@ public class MessageHandle {
             editMessageText.setChatId(message.getChatId());
             editMessageText.setMessageId(message.getMessageId());
             editMessageText.setText(text);
+
+            Bot.execute(editMessageText);
+            return true;
+        } catch (Exception e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e, JSON.toJSONString(message)));
+        }
+        return false;
+    }
+
+    public static boolean editMessage(Message message, String text, List<List<InlineKeyboardButton>> buttons) {
+        try {
+            EditMessageText editMessageText = new EditMessageText();
+            editMessageText.setChatId(message.getChatId());
+            editMessageText.setMessageId(message.getMessageId());
+            editMessageText.setText(text);
+
+            if (null != buttons && !buttons.isEmpty()) {
+                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+                inlineKeyboardMarkup.setKeyboard(buttons);
+                editMessageText.setReplyMarkup(inlineKeyboardMarkup);
+            }
 
             Bot.execute(editMessageText);
             return true;

@@ -91,6 +91,10 @@ public enum I18nEnum {
     ChooseVoiceStatus("choose_voice_status"),
     DownloadingXXX("downloading_xxx"),
 
+    PleaseSendMeChatButtons("please_send_me_chat_buttons"),
+    FormatError("format_error"),
+    SetChatButtons("set_chat_buttons"),
+
     ;
 
     private String key;

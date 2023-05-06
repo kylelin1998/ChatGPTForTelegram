@@ -45,4 +45,8 @@ public class ConfigSettings {
     @ConfigField(isNotNull = true)
     private String gptModel;
 
+    @JSONField(name = "chat_buttons")
+    @ConfigField(isNotNull = true)
+    private String chatButtons;
+
 }

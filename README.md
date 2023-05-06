@@ -105,3 +105,5 @@ restart - 重启机器人
 upgrade - 升级机器人
 help - 帮助
 ```
+![560c3fe7450239da5ad0d9638cfd4fd66551d576.png](https://openimg.kylelin1998.com/img/560c3fe7450239da5ad0d9638cfd4fd66551d576.png)
+![9d57081a0e248f157e427618c3430a44f3b1785d.png](https://openimg.kylelin1998.com/img/9d57081a0e248f157e427618c3430a44f3b1785d.png)
