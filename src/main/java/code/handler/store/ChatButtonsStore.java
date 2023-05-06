@@ -68,9 +68,14 @@ public class ChatButtonsStore {
                 if (buttonSplit.length != 2) {
                     return Optional.empty();
                 }
+                String url = buttonSplit[1];
+                if (!StringUtils.startsWith(url, "http")) {
+                    return Optional.empty();
+                }
+
                 InlineKeyboardButton button = new InlineKeyboardButton();
                 button.setText(buttonSplit[0]);
-                button.setUrl(buttonSplit[1]);
+                button.setUrl(url);
                 buttons.add(button);
             }
 
