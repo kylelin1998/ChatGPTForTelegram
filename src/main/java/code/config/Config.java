@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,7 @@ public class Config {
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
     public static class MetaData {
-        public final static String CurrentVersion = "1.0.36";
+        public final static String CurrentVersion = "1.0.37";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
         public final static String ProcessName = "ChatGPTForTelegram-universal.jar";
@@ -65,7 +66,30 @@ public class Config {
         }
     }
 
+    public static ConfigSettings initConfig() {
+        File file = new File(SettingsPath);
+        if (!file.exists()) {
+            Properties properties = System.getProperties();
+
+            ConfigSettings configSettings = new ConfigSettings();
+            configSettings.setGptToken(properties.getProperty("gptToken", ""));
+            configSettings.setBotAdminId(properties.getProperty("botAdminId", ""));
+            configSettings.setBotName(properties.getProperty("botName", ""));
+            configSettings.setBotToken(properties.getProperty("botToken", ""));
+            configSettings.setOnProxy(Boolean.valueOf(properties.getProperty("botProxy", "false")));
+            configSettings.setProxyHost(properties.getProperty("botProxyHost", "127.0.0.1"));
+            configSettings.setProxyPort(Integer.valueOf(properties.getProperty("botProxyPort", "7890")));
+
+            saveConfig(handle(configSettings));
+        }
+        return readConfig();
+    }
+
     private static ConfigSettings handle(ConfigSettings configSettings) {
+        Boolean debug = configSettings.getDebug();
+        if (null == debug) {
+            configSettings.setDebug(false);
+        }
         Boolean open = configSettings.getOpen();
         if (null == open) {
             configSettings.setOpen(false);

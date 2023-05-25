@@ -8,8 +8,16 @@ RUN set -xe \
 # 系统编码
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
+ENV GPT_TOKEN=''
+ENV BOT_ADMIN_ID=''
+ENV BOT_NAME=''
+ENV BOT_TOKEN=''
+ENV PROXY=false
+ENV PROXY_HOST=127.0.0.1
+ENV PROXY_PORT=7890
+
 WORKDIR /app
-COPY ChatGPTForTelegram-universal.jar /
-COPY run.sh /
+COPY ChatGPTForTelegram-universal.jar ChatGPTForTelegram-universal.jar
+COPY run.sh run.sh
 
 ENTRYPOINT ["sh", "run.sh"]
