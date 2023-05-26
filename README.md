@@ -20,11 +20,22 @@ ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于�
 你可以事先录制一段对话， 后面用到的时候直接快速重放出来， 就不用每次建立新对话就要发送一堆引导文本了
 
 ## 部署
+机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
+
+### 部署方式1 (推荐)
+#### 一键部署
+```
+docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token --restart=always kylelin1998/chatgpt-tg-bot
+```
+#### 一键部署(开启代理)
+```
+docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token -e PROXY=true -e PROXY_HOST=127.0.0.1 -e PROXY_PORT=7890 --restart=always kylelin1998/chatgpt-tg-bot
+```
+
+### 部署方式2 (不推荐)
 Youtube：https://youtu.be/CiDxb1ESijQ
 
 哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
-
-机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
 
 ### 准备
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)

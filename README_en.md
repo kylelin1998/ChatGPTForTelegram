@@ -22,11 +22,22 @@ This project is an open-source project that you can trust. Once deployed, the bo
 The record & playback mode allows you to record chats with the bot, then send 'end_record' to stop and save the recording. Afterward, you can playback the recorded chat. It can help your work and is a nice feature.
 
 ## Deploy
+The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
+
+### Deployment method 1 (recommended)
+#### One-click deployment
+```
+docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=YourGPTApiKey -e BOT_ADMIN_ID=AdminChatId -e BOT_NAME=BotUsername -e BOT_TOKEN=BotToken --restart=always kylelin1998/chatgpt-tg-bot
+```
+#### One-click deployment (with proxy enabled)
+```
+docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=YourGPTApiKey -e BOT_ADMIN_ID=AdminChatId -e BOT_NAME=BotUsername -e BOT_TOKEN=BotToken -e PROXY=true -e PROXY_HOST=127.0.0.1 -e PROXY_PORT=7890 --restart=always kylelin1998/chatgpt-tg-bot
+```
+
+### Deployment method 2 (not recommended)
 Youtube：https://youtu.be/CiDxb1ESijQ
 
 哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
-
-The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
 
 ### Prepare
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)
