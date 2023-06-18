@@ -25,11 +25,11 @@ ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于�
 ### 部署方式1 (推荐)
 #### 一键部署
 ```
-docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token --restart=always kylelin1998/chatgpt-tg-bot
+docker run --name gpttb -d -v $(pwd)/config:/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token --restart=always kylelin1998/chatgpt-tg-bot
 ```
 #### 一键部署(开启代理)
 ```
-docker run --name gpttb -d -v $(pwd):/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token -e PROXY=true -e PROXY_HOST=127.0.0.1 -e PROXY_PORT=7890 --restart=always kylelin1998/chatgpt-tg-bot
+docker run --name gpttb -d -v $(pwd)/config:/app/config -e GPT_TOKEN=你的GPTApiKey -e BOT_ADMIN_ID=管理者的ChatId -e BOT_NAME=机器人的username -e BOT_TOKEN=机器人token -e PROXY=true -e PROXY_HOST=127.0.0.1 -e PROXY_PORT=7890 --restart=always kylelin1998/chatgpt-tg-bot
 ```
 
 ### 部署方式2 (不推荐)
