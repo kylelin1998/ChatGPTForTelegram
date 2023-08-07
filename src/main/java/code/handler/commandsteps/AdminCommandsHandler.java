@@ -154,6 +154,8 @@ public class AdminCommandsHandler {
                     }
 
                     MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), GptTokenStore.getListText(session.getFromId()), false);
+
                     return StepResult.ok();
                 })
                 .build();
