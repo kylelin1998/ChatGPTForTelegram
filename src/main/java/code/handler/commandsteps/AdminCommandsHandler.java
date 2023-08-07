@@ -12,6 +12,7 @@ import code.handler.steps.StepResult;
 import code.handler.steps.StepsBuilder;
 import code.handler.steps.StepsChatSession;
 import code.handler.store.ChatButtonsStore;
+import code.handler.store.GptTokenStore;
 import code.util.*;
 import code.util.ffmpeg.FfmpegDownloadUrl;
 import com.alibaba.fastjson2.JSON;
@@ -71,6 +72,11 @@ public class AdminCommandsHandler {
                             )
                             .add(InlineKeyboardButtonBuilder
                                     .create()
+                                    .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetGptToken), StepsCenter.buildCallbackData(true, session, Command.SetGptToken, null))
+                                    .build()
+                            )
+                            .add(InlineKeyboardButtonBuilder
+                                    .create()
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Upgrade), StepsCenter.buildCallbackData(true, session, Command.Upgrade, null))
                                     .build()
@@ -101,6 +107,54 @@ public class AdminCommandsHandler {
                     MessageHandle.sendInlineKeyboardList(session.getChatId(), builder.toString(),  keyboardButton);
 
                     return StepResult.end();
+                })
+                .build();
+
+        // Set Gpt Token
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetGptToken)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), GptTokenStore.getListText(session.getFromId()), false);
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeGptToken), false);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (StringUtils.isBlank(text)) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.FormatError), false);
+                        return StepResult.reject();
+                    }
+                    if (text.equals("-1")) {
+                        GptTokenStore.deleteAll();
+                    } else {
+                        String[] split = StringUtils.split(text, "\n");
+                        ArrayList<String> tokens = new ArrayList<>();
+                        for (String s : split) {
+                            if (StringUtils.startsWith(s, "sk-")) {
+                                tokens.add(s);
+                            }
+                        }
+                        if (tokens.isEmpty()) {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.FormatError), false);
+                            return StepResult.reject();
+                        }
+                        GptTokenStore.forceSave(tokens);
+                    }
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    return StepResult.ok();
                 })
                 .build();
 

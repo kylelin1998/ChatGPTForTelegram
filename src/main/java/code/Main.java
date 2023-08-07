@@ -9,6 +9,7 @@ import code.handler.Handler;
 import code.handler.I18nHandle;
 import code.handler.message.MessageHandle;
 import code.handler.store.Store;
+import code.repository.GptTokenTableRepository;
 import code.repository.I18nTableRepository;
 import code.repository.RecordTableRepository;
 import code.util.ExceptionUtil;
@@ -26,6 +27,7 @@ public class Main {
     public static volatile ConfigSettings GlobalConfig = Config.initConfig();
     public static volatile code.repository.I18nTableRepository I18nTableRepository = new I18nTableRepository();
     public static volatile code.repository.RecordTableRepository RecordTableRepository = new RecordTableRepository();
+    public static volatile code.repository.GptTokenTableRepository GptTokenTableRepository = new GptTokenTableRepository();
 
     public static void main(String[] args) throws InterruptedException {
         log.info(String.format("Main args: %s", JSON.toJSONString(args)));
@@ -37,12 +39,10 @@ public class Main {
                 .enableCookieManagement(false)
         ;
 
-        Store.init();
         new Thread(() -> {
             while (true) {
                 try {
                     GlobalConfig = Config.readConfig();
-                    GPTUtil.setToken(GlobalConfig.getGptToken());
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {}
             }
@@ -61,8 +61,9 @@ public class Main {
             }
 
             botsApi.registerBot(Bot);
-
+            Store.init();
             MessageHandle.sendMessage(GlobalConfig.getBotAdminId(), I18nHandle.getText(GlobalConfig.getBotAdminId(), I18nEnum.BotStartSucceed) + I18nHandle.getText(GlobalConfig.getBotAdminId(), I18nEnum.CurrentVersion) + ": " + Config.MetaData.CurrentVersion, false);
+
         } catch (TelegramApiException e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
         }

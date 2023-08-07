@@ -25,6 +25,7 @@ public enum Command {
     SetVoiceStatus("set_voice_status"),
     ChangeModel("change_model"),
     SetOpenStatus("set_open_status"),
+    SetGptToken("set_gpt_token"),
     UpdateConfig("uc"),
     Language("language"),
     Restart("restart"),

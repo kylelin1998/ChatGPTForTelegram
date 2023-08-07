@@ -95,6 +95,12 @@ public enum I18nEnum {
     FormatError("format_error"),
     SetChatButtons("set_chat_buttons"),
 
+    Tip429("tip_429"),
+    SetGptToken("set_gpt_token"),
+    PleaseSendMeGptToken("please_send_me_gpt_token"),
+    Alive("alive"),
+    Die("die"),
+
     ;
 
     private String key;

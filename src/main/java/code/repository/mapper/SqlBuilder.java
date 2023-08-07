@@ -101,7 +101,20 @@ public class SqlBuilder {
         String sql = "select" + buildFieldSql(tableEntity, " ", " ") + "from " + tableName + buildWhereSql(tableEntity);
         return sql;
     }
+    public static String buildSelectOneRandSql(TableEntity tableEntity) {
+        String tableName = getTableName(tableEntity);
 
+        String sql = "select" + buildFieldSql(tableEntity, " ", " ") + "from " + tableName + buildWhereSql(tableEntity);
+        sql = sql + " order by random() limit 1";
+        return sql;
+    }
+
+    public static String buildDeleteAllSql(TableEntity entity) {
+        String tableName = getTableName(entity);
+
+        String sql = "delete from " + tableName;
+        return sql;
+    }
     public static String buildDeleteSql(TableEntity where) {
         String tableName = getTableName(where);
 

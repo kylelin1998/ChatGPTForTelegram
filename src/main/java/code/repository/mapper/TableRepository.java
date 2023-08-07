@@ -3,6 +3,7 @@ package code.repository.mapper;
 import code.util.ExceptionUtil;
 import code.util.SqliteUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sqlite.jdbc4.JDBC4ResultSet;
 
@@ -86,7 +87,7 @@ public abstract class TableRepository<T extends TableEntity> {
         return null;
     }
 
-    public Boolean delete(T where) {
+    public boolean delete(T where) {
         try {
             return (boolean) execute((statement) -> {
                 int update = statement.executeUpdate(SqlBuilder.buildDeleteSql(where));
@@ -95,10 +96,21 @@ public abstract class TableRepository<T extends TableEntity> {
         } catch (Exception e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
         }
-        return null;
+        return false;
+    }
+    public boolean deleteAll(Class<T> tClass) {
+        try {
+            return (boolean) execute((statement) -> {
+                int update = statement.executeUpdate(SqlBuilder.buildDeleteAllSql(tClass.newInstance()));
+                return update > 0;
+            });
+        } catch (Exception e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+        }
+        return false;
     }
 
-    public Boolean update(T entity, T where) {
+    public boolean update(T entity, T where) {
         try {
             return (boolean) execute((statement) -> {
                 int update = statement.executeUpdate(SqlBuilder.buildUpdateSql(entity, where));
@@ -107,10 +119,10 @@ public abstract class TableRepository<T extends TableEntity> {
         } catch (Exception e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
         }
-        return null;
+        return false;
     }
 
-    public Boolean insert(T entity) {
+    public boolean insert(T entity) {
         try {
             return (boolean) execute((statement) -> {
                 int update = statement.executeUpdate(SqlBuilder.buildInsertSql(entity, false));
@@ -119,7 +131,7 @@ public abstract class TableRepository<T extends TableEntity> {
         } catch (Exception e) {
             log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
         }
-        return null;
+        return false;
     }
 
     public T getOne(ResultSet resultSet) throws SQLException, IllegalAccessException, InstantiationException {
@@ -169,6 +181,18 @@ public abstract class TableRepository<T extends TableEntity> {
         try {
             return (T) execute((statement) -> {
                 ResultSet resultSet = statement.executeQuery(SqlBuilder.buildSelectSql(where));
+
+                return getOne(resultSet);
+            });
+        } catch (Exception e) {
+            log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+        }
+        return null;
+    }
+    public T selectOneByRand(T where) {
+        try {
+            return (T) execute((statement) -> {
+                ResultSet resultSet = statement.executeQuery(SqlBuilder.buildSelectOneRandSql(where));
 
                 return getOne(resultSet);
             });

@@ -8,6 +8,7 @@ import code.handler.message.InlineKeyboardButtonListBuilder;
 import code.handler.message.MessageHandle;
 import code.handler.steps.*;
 import code.handler.store.ChatButtonsStore;
+import code.handler.store.GptTokenStore;
 import code.util.*;
 import code.util.gpt.GPTRole;
 import code.util.gpt.GPTTranscriptionsModel;
@@ -19,7 +20,6 @@ import code.util.gpt.response.GPTChatResponse;
 import code.util.gpt.response.GPTCreateImageResponse;
 import code.util.gpt.response.GPTTranscriptionsResponse;
 import com.alibaba.fastjson2.JSON;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -70,10 +70,12 @@ public class Handler {
             Bot.downloadFile(file, new java.io.File(ogg));
             FFmpegUtil.oggFileToMp3(Config.FFMPEGPath, ogg, mp3);
 
+            String token = GptTokenStore.getRandomToken();
+
             GPTTranscriptionsParameter parameter = new GPTTranscriptionsParameter();
             parameter.setModel(GPTTranscriptionsModel.Whisper_1.getModel());
             parameter.setFile(new java.io.File(mp3));
-            GPTTranscriptionsResponse response = GPTUtil.transcriptions(RequestProxyConfig.create(), parameter);
+            GPTTranscriptionsResponse response = GPTUtil.transcriptions(RequestProxyConfig.create(), token, parameter);
             if (!response.isOk()) {
                 MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
                 return false;
@@ -155,9 +157,12 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
+                        token = GptTokenStore.getRandomToken();
+
                         Message finalMessage = message;
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -179,6 +184,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
                             MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
@@ -288,8 +295,11 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        token = GptTokenStore.getRandomToken();
+
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -311,6 +321,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
                             MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
@@ -401,8 +413,11 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        token = GptTokenStore.getRandomToken();
+
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -424,6 +439,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.end();
                     }
@@ -510,8 +527,11 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        token = GptTokenStore.getRandomToken();
+
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -533,6 +553,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
@@ -617,8 +639,11 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        token = GptTokenStore.getRandomToken();
+
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -640,6 +665,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
                     }
@@ -699,7 +726,9 @@ public class Handler {
                     parameter.setUser(session.getSessionId());
                     parameter.setPrompt(session.getText());
 
-                    GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), parameter);
+                    String token = GptTokenStore.getRandomToken();
+
+                    GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), token, parameter);
                     if (image.isOk()) {
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloading));
                         InputStream inputStream = DownloadUtil.download(RequestProxyConfig.create(), image.getData().get(0).getUrl());
@@ -757,8 +786,11 @@ public class Handler {
                     AtomicInteger count = new AtomicInteger();
                     GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
+                    String token = null;
                     for (int i = 0; i < 3; i++) {
-                        response = GPTUtil.chat(RequestProxyConfig.create(), gptChatParameter, (content -> {
+                        token = GptTokenStore.getRandomToken();
+
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -780,6 +812,8 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
+                        GptTokenStore.handle(token, response);
+
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
                             MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.ChatHasTooManyConversations, response.getStatusCode()));
