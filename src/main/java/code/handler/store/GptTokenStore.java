@@ -4,8 +4,10 @@ import code.config.I18nEnum;
 import code.eneity.GptTokenTableEntity;
 import code.eneity.cons.GptTokenStatusEnum;
 import code.handler.I18nHandle;
+import code.handler.message.MessageHandle;
 import code.util.gpt.response.GPTChatResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.List;
 
@@ -52,10 +54,17 @@ public class GptTokenStore {
         }
         if (response.getStatusCode() == 429) {
             if (response.getResponse().contains("You exceeded your current quota, please check your plan and billing details")) {
-                GptTokenTableRepository.die(token);
+                send(token);
             }
         } else if (response.getStatusCode() == 401) {
-            GptTokenTableRepository.die(token);
+            send(token);
+        }
+    }
+    private static void send(String token) {
+        String text = token + " " + I18nHandle.getText(GlobalConfig.getBotAdminId(), I18nEnum.Tip429);
+        Message message = MessageHandle.sendMessage(GlobalConfig.getBotAdminId(), text, false);
+        if (null != message) {
+            GptTokenTableRepository.dieAndSend(token);
         }
     }
 

@@ -39,6 +39,7 @@ import static code.Main.*;
 public class Handler {
 
     private final static int CharacterLength = 150;
+    private final static String VarRecordContent = "${content}";
 
     private static GPTChatParameter buildGPTChatParameter(String fromId, List<GPTMessage> messages, String content) {
         GPTMessage message = new GPTMessage();
@@ -46,6 +47,15 @@ public class Handler {
         message.setContent(content);
         messages.add(message);
 
+        GPTChatParameter parameter = new GPTChatParameter();
+//        parameter.setUser(fromId);
+        parameter.setStream(true);
+        parameter.setModel(GlobalConfig.getGptModel());
+        parameter.setMessages(messages);
+
+        return parameter;
+    }
+    private static GPTChatParameter buildGPTChatParameter(String fromId, List<GPTMessage> messages) {
         GPTChatParameter parameter = new GPTChatParameter();
 //        parameter.setUser(fromId);
         parameter.setStream(true);
@@ -242,7 +252,7 @@ public class Handler {
         // Playback
         StepsBuilder
                 .create()
-                .bindCommand(Command.Playback)
+                .bindCommand(Command.Playback, Command.PlaybackRegex)
                 .debug(GlobalConfig.getDebug())
                 .error((Exception e, StepsChatSession session) -> {
                     log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
@@ -259,7 +269,20 @@ public class Handler {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.XXXNotFound, text), false);
                         return StepResult.end();
                     }
-                    context.put("messages", Collections.synchronizedList(JSON.parseArray(recordTableEntity.getChatTemplateJson(), GPTMessage.class)));
+                    List<GPTMessage> messageList = JSON.parseArray(recordTableEntity.getChatTemplateJson(), GPTMessage.class);
+                    boolean containContentVar = false;
+                    for (GPTMessage gptMessage : messageList) {
+                        if (gptMessage.getRole().equals(GPTRole.User.getRole())) {
+                            String content = gptMessage.getContent();
+                            if (content.contains(VarRecordContent)) {
+                                containContentVar = true;
+                                break;
+                            }
+                        }
+                    }
+                    context.put("chatTemplateJson", recordTableEntity.getChatTemplateJson());
+                    context.put("messages", Collections.synchronizedList(messageList));
+                    context.put("containContentVar", containContentVar);
 
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.ThisChatIsANewChat), false);
                     context.put("message", message);
@@ -284,6 +307,9 @@ public class Handler {
                     String sendText = I18nHandle.getText(session.getFromId(), I18nEnum.RequestingOpenAiApi, GlobalConfig.getGptModel(), questionText, I18nHandle.getText(session.getFromId(), I18nEnum.TheCurrentModeIsContinuousChatMode));
                     Message message = MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), sendText, false);
 
+                    Boolean containContentVar = (Boolean) context.get("containContentVar");
+                    String chatTemplateJson = (String) context.get("chatTemplateJson");
+                    GPTChatParameter gptChatParameter = null;
                     Object messagesObj = context.get("messages");
                     List<GPTMessage> messages = null;
                     if (null != messagesObj) {
@@ -291,9 +317,22 @@ public class Handler {
                     } else {
                         messages = Collections.synchronizedList(new ArrayList<>());
                     }
+                    if (containContentVar) {
+                        List<GPTMessage> messageList = JSON.parseArray(chatTemplateJson, GPTMessage.class);
+                        for (GPTMessage gptMessage : messageList) {
+                            if (gptMessage.getRole().equals(GPTRole.User.getRole())) {
+                                String content = gptMessage.getContent();
+                                if (content.contains(VarRecordContent)) {
+                                    gptMessage.setContent(StringUtils.replace(content, VarRecordContent, session.getText()));
+                                }
+                            }
+                        }
+                        gptChatParameter = buildGPTChatParameter(session.getSessionId(), messageList);
+                    } else {
+                        gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
+                    }
 
                     AtomicInteger count = new AtomicInteger();
-                    GPTChatParameter gptChatParameter = buildGPTChatParameter(session.getSessionId(), messages, session.getText());
                     GPTChatResponse response = null;
                     String token = null;
                     for (int i = 0; i < 3; i++) {
@@ -775,6 +814,13 @@ public class Handler {
                         messages = Collections.synchronizedList(new ArrayList<>());
                     }
                     if ("end_record".equals(session.getText()) && messages.size() > 0) {
+                        return StepResult.next();
+                    } else if (session.getText().contains(VarRecordContent)) {
+                        GPTMessage gptMessage = new GPTMessage();
+                        gptMessage.setRole(GPTRole.User.getRole());
+                        gptMessage.setContent(session.getText());
+                        messages.add(gptMessage);
+                        context.put("messages", messages);
                         return StepResult.next();
                     }
 

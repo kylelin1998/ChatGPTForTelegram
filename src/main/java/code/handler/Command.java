@@ -2,47 +2,65 @@ package code.handler;
 
 import lombok.Getter;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Getter
 public enum Command {
 
-    Chat("chat"),
-    ChatShorter("c"),
-    Ask("ask"),
-    AskShorter("a"),
-    ChatMsgLimit("cml"),
-    NoneOfContextChatMessage("nccm"),
-    Exit("exit"),
-    Admin("admin"),
-    Image("image"),
+    Chat("chat", false),
+    ChatShorter("c", false),
+    Ask("ask", false),
+    AskShorter("a", false),
+    ChatMsgLimit("cml", false),
+    NoneOfContextChatMessage("nccm", false),
+    Exit("exit", false),
+    Admin("admin", false),
+    Image("image", false),
 
-    Record("record"),
-    Playback("p"),
-    RecordList("record_list"),
-    GetRecord("get_record"),
-    DeleteRecord("delete_record"),
+    Record("record", false),
+    Playback("p", false),
+    PlaybackRegex("^[,，]", true),
+    RecordList("record_list", false),
+    GetRecord("get_record", false),
+    DeleteRecord("delete_record", false),
 
-    SetChatButtons("set_chat_buttons"),
-    SetVoiceStatus("set_voice_status"),
-    ChangeModel("change_model"),
-    SetOpenStatus("set_open_status"),
-    SetGptToken("set_gpt_token"),
-    UpdateConfig("uc"),
-    Language("language"),
-    Restart("restart"),
-    Upgrade("upgrade"),
+    SetChatButtons("set_chat_buttons", false),
+    SetVoiceStatus("set_voice_status", false),
+    ChangeModel("change_model", false),
+    SetOpenStatus("set_open_status", false),
+    SetGptToken("set_gpt_token", false),
+    UpdateConfig("uc", false),
+    Language("language", false),
+    Restart("restart", false),
+    Upgrade("upgrade", false),
 
     ;
 
     private String cmd;
+    private boolean regex;
 
-    Command(String cmd) {
+    Command(String cmd, boolean regex) {
         this.cmd = cmd;
+        this.regex = regex;
     }
 
     public static Command toCmd(String cmd) {
         for (Command value : Command.values()) {
             if (value.getCmd().equals(cmd)) {
                 return value;
+            }
+        }
+        return null;
+    }
+    public static Command regexMatch(String cmd) {
+        for (Command value : values()) {
+            if (value.isRegex()) {
+                Pattern pattern = Pattern.compile(value.getCmd());
+                Matcher matcher = pattern.matcher(cmd);
+                if (matcher.find()) {
+                    return value;
+                }
             }
         }
         return null;

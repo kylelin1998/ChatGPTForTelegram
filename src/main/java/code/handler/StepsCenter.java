@@ -75,6 +75,18 @@ public class StepsCenter {
                     return true;
                 }
             }
+        } else {
+            Command command = Command.regexMatch(session.getText());
+            if (null != command) {
+                session.setText(session.getText().replaceFirst(command.getCmd(), ""));
+                cmdHandle(
+                        command,
+                        false,
+                        session,
+                        null
+                );
+                return true;
+            }
         }
         return false;
     }
