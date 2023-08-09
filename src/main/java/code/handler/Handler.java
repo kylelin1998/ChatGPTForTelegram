@@ -193,6 +193,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -200,7 +201,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
@@ -363,6 +363,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -370,7 +371,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
@@ -485,6 +485,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -492,7 +493,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.end();
@@ -599,6 +599,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -606,7 +607,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
@@ -711,6 +711,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -718,7 +719,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.AnErrorOccurredOfRequestingOpenAiApiFailed, response.getStatusCode()));
                         return StepResult.reject();
@@ -865,6 +865,7 @@ public class Handler {
                         if (response.isOk()) {
                             break;
                         }
+                        GptTokenStore.handle(token, response);
                         try {
                             TimeUnit.SECONDS.sleep(i + 1);
                         } catch (InterruptedException e) {}
@@ -872,7 +873,6 @@ public class Handler {
 
                     if (!response.isOk()) {
                         log.warn(JSON.toJSONString(response));
-                        GptTokenStore.handle(token, response);
 
                         int statusCode = response.getStatusCode();
                         if (statusCode == 400) {
