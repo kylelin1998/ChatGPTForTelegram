@@ -1,6 +1,7 @@
 package code.handler;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +55,10 @@ public enum Command {
         return null;
     }
     public static Command regexMatch(String cmd) {
+        if (StringUtils.isBlank(cmd)) {
+            return null;
+        }
+
         for (Command value : values()) {
             if (value.isRegex()) {
                 Pattern pattern = Pattern.compile(value.getCmd());

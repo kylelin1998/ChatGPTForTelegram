@@ -57,35 +57,37 @@ public class StepsCenter {
     }
 
     public static boolean cmdHandle(StepsChatSession session) {
-        if (StringUtils.isNotBlank(session.getText()) && session.getText().startsWith("/")) {
-            String s = StringUtils.remove(session.getText(), "/");
-            String[] split = s.split(" ");
-            if (split.length > 0) {
-                String cmd = split[0];
-                cmd = StringUtils.replace(cmd, "@" + GlobalConfig.getBotName(), "");
-                if (Command.exist(cmd)) {
-                    split[0] = cmd;
-                    session.setText(Stream.of(split).skip(1).collect(Collectors.joining(" ")));
+        if (StringUtils.isNotBlank(session.getText())) {
+            if (session.getText().startsWith("/")) {
+                String s = StringUtils.remove(session.getText(), "/");
+                String[] split = s.split(" ");
+                if (split.length > 0) {
+                    String cmd = split[0];
+                    cmd = StringUtils.replace(cmd, "@" + GlobalConfig.getBotName(), "");
+                    if (Command.exist(cmd)) {
+                        split[0] = cmd;
+                        session.setText(Stream.of(split).skip(1).collect(Collectors.joining(" ")));
+                        cmdHandle(
+                                Command.toCmd(cmd),
+                                false,
+                                session,
+                                null
+                        );
+                        return true;
+                    }
+                }
+            } else {
+                Command command = Command.regexMatch(session.getText());
+                if (null != command) {
+                    session.setText(session.getText().replaceFirst(command.getCmd(), ""));
                     cmdHandle(
-                            Command.toCmd(cmd),
+                            command,
                             false,
                             session,
                             null
                     );
                     return true;
                 }
-            }
-        } else {
-            Command command = Command.regexMatch(session.getText());
-            if (null != command) {
-                session.setText(session.getText().replaceFirst(command.getCmd(), ""));
-                cmdHandle(
-                        command,
-                        false,
-                        session,
-                        null
-                );
-                return true;
             }
         }
         return false;
