@@ -4,9 +4,8 @@
 [![release](https://img.shields.io/github/v/release/kylelin1998/ChatGPTForTelegram)](https://github.com/kylelin1998/ChatGPTForTelegram/releases/latest)
 
 ## 介绍
-Youtube： https://youtu.be/a_WLFtRWGzY
-
-哔哩哔哩： https://www.bilibili.com/video/BV1qX4y1z7Dt/
+- Youtube： https://youtu.be/a_WLFtRWGzY
+- 哔哩哔哩： https://www.bilibili.com/video/BV1qX4y1z7Dt/
 
 ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于自己的机器人
 
@@ -19,13 +18,21 @@ ChatGPT机器人， 这是一个开源项目， 你可以基于它搭建属于�
 
 你可以事先录制一段对话， 后面用到的时候直接快速重放出来， 就不用每次建立新对话就要发送一堆引导文本了
 
+## 最近更新日志
+开源ChatGPT TG机器人 v1.0.50 更新说明视频
+- ⭐ Youtube: https://youtu.be/9hczaDzOvGA
+- ⭐ 哔哩哔哩： https://www.bilibili.com/video/BV1wV41137Yf/
+
+1. 支持多ChatGPT Api Key， 随机切换使用， 死号自动通知管理员
+2. 支持精简回复， 开启后部分命令会去除回复的问题显示和退出提示， 仅显示回复内容
+3. 超级加强引导， 录制重放对话支持替换变量， 直接发送文本即可， 无需再增加文本来引导
+
 ## 部署
 机器人的部署步骤是基于 Docker 的，其机器人升级功能也基于 Docker，因此请使用 Docker 进行部署，以防出现错误
 
 ### 部署方式1 (推荐)
-⭐ Youtube: https://youtu.be/mNg6TFyozZk
-
-⭐ 哔哩哔哩： https://www.bilibili.com/video/BV1qF411f7pg/
+- ⭐ Youtube: https://youtu.be/mNg6TFyozZk
+- ⭐ 哔哩哔哩： https://www.bilibili.com/video/BV1qF411f7pg/
 
 #### 一键部署
 ```
@@ -37,9 +44,8 @@ docker run --name gpttb -d -v $(pwd)/config:/app/config -e GPT_TOKEN=你的GPTAp
 ```
 
 ### 部署方式2 (不推荐)
-Youtube：https://youtu.be/CiDxb1ESijQ
-
-哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
+- Youtube：https://youtu.be/CiDxb1ESijQ
+- 哔哩哔哩： https://www.bilibili.com/video/BV1Ts4y1S7bn/
 
 ### 准备
 ![ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png](https://openimg.kylelin1998.com/img/ff3379f00b462db7b016f361c9b8fb7cd9097dc8.png)

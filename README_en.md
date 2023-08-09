@@ -21,6 +21,15 @@ This project is an open-source project that you can trust. Once deployed, the bo
 
 The record & playback mode allows you to record chats with the bot, then send 'end_record' to stop and save the recording. Afterward, you can playback the recorded chat. It can help your work and is a nice feature.
 
+## Recent Update Log
+Open-source ChatGPT TG Robot v1.0.50 Update Notes Video
+- ⭐ Youtube: https://youtu.be/9hczaDzOvGA
+- ⭐ Bilibili: https://www.bilibili.com/video/BV1wV41137Yf/
+
+1. Added support for multiple ChatGPT API keys, which switch randomly. Invalid keys are automatically notified to the administrator.
+2. Added support for streamlined replies. When enabled, certain commands will remove the display of the question and exit prompts, only showing the reply content.
+3. Enhanced onboarding process. The recording and playback of conversations now support variable substitution. Simply send the text and no longer need to add additional text for guidance.
+
 ## Deploy
 The bot's deploy steps based on the Docker, its upgrade feature also based on the Docker, so please use the Docker to deploy it in case appear error.
 
