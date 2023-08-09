@@ -94,6 +94,10 @@ public class Config {
         if (null == open) {
             configSettings.setOpen(false);
         }
+        Boolean conciseReplies = configSettings.getConciseReplies();
+        if (null == conciseReplies) {
+            configSettings.setConciseReplies(false);
+        }
         Boolean voice = configSettings.getVoice();
         if (null == voice) {
             configSettings.setVoice(false);

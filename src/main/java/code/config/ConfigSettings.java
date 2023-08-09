@@ -49,4 +49,8 @@ public class ConfigSettings {
     @ConfigField(isNotNull = false)
     private String chatButtons;
 
+    @JSONField(name = "concise_replies")
+    @ConfigField(isNotNull = false)
+    private Boolean conciseReplies;
+
 }

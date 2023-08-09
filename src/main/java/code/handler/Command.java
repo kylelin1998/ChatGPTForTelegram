@@ -31,6 +31,7 @@ public enum Command {
     ChangeModel("change_model", false),
     SetOpenStatus("set_open_status", false),
     SetGptToken("set_gpt_token", false),
+    SetConciseReplies("set_concise_replies", false),
     UpdateConfig("uc", false),
     Language("language", false),
     Restart("restart", false),

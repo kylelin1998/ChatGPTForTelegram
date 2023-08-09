@@ -77,6 +77,11 @@ public class AdminCommandsHandler {
                             )
                             .add(InlineKeyboardButtonBuilder
                                     .create()
+                                    .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetConciseReplies), StepsCenter.buildCallbackData(true, session, Command.SetConciseReplies, null))
+                                    .build()
+                            )
+                            .add(InlineKeyboardButtonBuilder
+                                    .create()
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Upgrade), StepsCenter.buildCallbackData(true, session, Command.Upgrade, null))
                                     .build()
@@ -91,6 +96,9 @@ public class AdminCommandsHandler {
                     builder.append("\n");
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetOpenStatus) + ": ");
                     builder.append(config.getOpen() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
+                    builder.append("\n");
+                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.SetConciseReplies) + ": ");
+                    builder.append(config.getConciseReplies() ? I18nHandle.getText(session.getFromId(), I18nEnum.Open) : I18nHandle.getText(session.getFromId(), I18nEnum.Close));
                     builder.append("\n");
                     builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.Model) + ": ");
                     builder.append(config.getGptModel());
@@ -107,6 +115,51 @@ public class AdminCommandsHandler {
                     MessageHandle.sendInlineKeyboardList(session.getChatId(), builder.toString(),  keyboardButton);
 
                     return StepResult.end();
+                })
+                .build();
+
+        // Set Concise Replies
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetConciseReplies)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    List<InlineKeyboardButton> buttons = InlineKeyboardButtonBuilder
+                            .create()
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Open), StepsCenter.buildCallbackData(false, session, Command.SetConciseReplies, "open"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Close), StepsCenter.buildCallbackData(false, session, Command.SetConciseReplies, "close"))
+                            .add(I18nHandle.getText(session.getFromId(), I18nEnum.Cancel), StepsCenter.buildCallbackData(false, session, Command.SetConciseReplies, "cancel"))
+                            .build();
+
+                    MessageHandle.sendInlineKeyboard(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseChooseConciseReplies),  buttons);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+                    if (text.equals("open") || text.equals("close")) {
+                        ConfigSettings config = Config.readConfig();
+                        config.setConciseReplies(text.equals("open"));
+                        boolean b = Config.saveConfig(config);
+                        if (b) {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                        } else {
+                            MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                        }
+
+                        return StepResult.end();
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.CancelSucceeded), false);
+                        return StepResult.end();
+                    }
                 })
                 .build();
 

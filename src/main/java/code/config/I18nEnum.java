@@ -100,6 +100,8 @@ public enum I18nEnum {
     PleaseSendMeGptToken("please_send_me_gpt_token"),
     Alive("alive"),
     Die("die"),
+    PleaseChooseConciseReplies("please_choose_concise_replies"),
+    SetConciseReplies("set_concise_replies"),
 
     ;
 

@@ -21,6 +21,7 @@ import code.util.gpt.response.GPTCreateImageResponse;
 import code.util.gpt.response.GPTTranscriptionsResponse;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.File;
@@ -107,6 +108,11 @@ public class Handler {
 
     private static String getQuestionText(StepsChatSession session) {
         return (session.getText().length() > CharacterLength ? StringUtils.substring(session.getText(), 0, CharacterLength) + "..." : session.getText());
+    }
+
+    private static boolean conciseReplies() {
+        Boolean conciseReplies = GlobalConfig.getConciseReplies();
+        return BooleanUtils.toBooleanDefaultIfNull(conciseReplies, false);
     }
 
     public static void init() {
@@ -207,15 +213,19 @@ public class Handler {
                     }
 
                     StringBuilder builder = new StringBuilder();
-                    builder.append(questionText);
-                    builder.append("\n");
-                    builder.append("---");
-                    builder.append("\n");
-                    builder.append(response.getContent());
-                    builder.append("\n\n");
-                    builder.append("---");
-                    builder.append("\n");
-                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+                    if (conciseReplies()) {
+                        builder.append(response.getContent());
+                    } else {
+                        builder.append(questionText);
+                        builder.append("\n");
+                        builder.append("---");
+                        builder.append("\n");
+                        builder.append(response.getContent());
+                        builder.append("\n\n");
+                        builder.append("---");
+                        builder.append("\n");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+                    }
 
                     for (int i = 0; i < 3; i++) {
                         if (MessageHandle.editMessage(message, builder.toString(), build)) {
@@ -373,15 +383,19 @@ public class Handler {
                     }
 
                     StringBuilder builder = new StringBuilder();
-                    builder.append(questionText);
-                    builder.append("\n");
-                    builder.append("---");
-                    builder.append("\n");
-                    builder.append(response.getContent());
-                    builder.append("\n\n");
-                    builder.append("---");
-                    builder.append("\n");
-                    builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+                    if (conciseReplies()) {
+                        builder.append(response.getContent());
+                    } else {
+                        builder.append(questionText);
+                        builder.append("\n");
+                        builder.append("---");
+                        builder.append("\n");
+                        builder.append(response.getContent());
+                        builder.append("\n\n");
+                        builder.append("---");
+                        builder.append("\n");
+                        builder.append(I18nHandle.getText(session.getFromId(), I18nEnum.ContinueThisChat));
+                    }
 
                     for (int i = 0; i < 3; i++) {
                         if (MessageHandle.editMessage(message, builder.toString())) {
