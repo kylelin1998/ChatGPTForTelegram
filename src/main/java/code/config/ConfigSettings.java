@@ -57,4 +57,8 @@ public class ConfigSettings {
     @ConfigField(isNotNull = true)
     private String openaiAPIPrefix;
 
+    @JSONField(name = "start_text")
+    @ConfigField(isNotNull = false)
+    private String startText;
+
 }

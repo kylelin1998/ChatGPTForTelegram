@@ -103,6 +103,8 @@ public enum I18nEnum {
     PleaseChooseConciseReplies("please_choose_concise_replies"),
     SetConciseReplies("set_concise_replies"),
     SetOpenAIAPIPrefix("set_openai_api_prefix"),
+    SetStartText("set_start_text"),
+    PleaseSendMeStartText("please_send_me_start_text"),
 
     ;
 

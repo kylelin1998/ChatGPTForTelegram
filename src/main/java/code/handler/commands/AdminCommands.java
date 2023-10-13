@@ -81,6 +81,11 @@ public class AdminCommands {
                             )
                             .add(InlineKeyboardButtonBuilder
                                     .create()
+                                    .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetStartText), StepsCenter.buildCallbackData(true, session, Command.SetStartText, null))
+                                    .build()
+                            )
+                            .add(InlineKeyboardButtonBuilder
+                                    .create()
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Restart), StepsCenter.buildCallbackData(true, session, Command.Restart, null))
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.Upgrade), StepsCenter.buildCallbackData(true, session, Command.Upgrade, null))
                                     .build()
@@ -452,6 +457,38 @@ public class AdminCommands {
 
                     ConfigSettings config = Config.readConfig();
                     config.setGptModel(text);
+                    boolean b = Config.saveConfig(config);
+                    if (b) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                    }
+                    return StepResult.ok();
+                })
+                .build();
+
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetStartText)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeStartText), false);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+
+                    ConfigSettings config = Config.readConfig();
+                    config.setStartText(text);
                     boolean b = Config.saveConfig(config);
                     if (b) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
