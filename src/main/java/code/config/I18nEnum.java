@@ -102,6 +102,7 @@ public enum I18nEnum {
     Die("die"),
     PleaseChooseConciseReplies("please_choose_concise_replies"),
     SetConciseReplies("set_concise_replies"),
+    SetOpenAIAPIPrefix("set_openai_api_prefix"),
 
     ;
 

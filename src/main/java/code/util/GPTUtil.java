@@ -29,12 +29,12 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class GPTUtil {
 
-    public static GPTCreateImageResponse createImage(RequestProxyConfig requestProxyConfig, String token, GPTCreateImageParameter parameter) {
+    public static GPTCreateImageResponse createImage(RequestProxyConfig requestProxyConfig, String token, String apiPrefix, GPTCreateImageParameter parameter) {
         GPTCreateImageResponse gptCreateImageResponse = new GPTCreateImageResponse();
         gptCreateImageResponse.setOk(false);
         try {
             Request request = Request
-                    .post("https://api.openai.com/v1/images/generations")
+                    .post(apiPrefix + "/v1/images/generations")
                     .setHeader("Authorization", "Bearer " + token)
                     .bodyString(JSON.toJSONString(parameter), ContentType.APPLICATION_JSON)
                     .connectTimeout(Timeout.ofSeconds(30))
@@ -58,7 +58,7 @@ public class GPTUtil {
         return gptCreateImageResponse;
     }
 
-    public static GPTTranscriptionsResponse transcriptions(RequestProxyConfig requestProxyConfig, String token, GPTTranscriptionsParameter parameter) {
+    public static GPTTranscriptionsResponse transcriptions(RequestProxyConfig requestProxyConfig, String token, String apiPrefix, GPTTranscriptionsParameter parameter) {
         GPTTranscriptionsResponse gptTranscriptionsResponse = new GPTTranscriptionsResponse();
         gptTranscriptionsResponse.setOk(false);
         try {
@@ -69,7 +69,7 @@ public class GPTUtil {
             HttpEntity entity = builder.build();
 
             Request request = Request
-                    .post("https://api.openai.com/v1/audio/transcriptions")
+                    .post(apiPrefix + "/v1/audio/transcriptions")
                     .body(entity)
                     .setHeader("Authorization", "Bearer " + token)
                     .connectTimeout(Timeout.ofSeconds(30))
@@ -93,13 +93,13 @@ public class GPTUtil {
         return gptTranscriptionsResponse;
     }
 
-    public static GPTChatResponse chat(RequestProxyConfig requestProxyConfig, String token, GPTChatParameter parameter, GPTCallback callback) {
+    public static GPTChatResponse chat(RequestProxyConfig requestProxyConfig, String token, String apiPrefix, GPTChatParameter parameter, GPTCallback callback) {
         GPTChatResponse chatResponse = new GPTChatResponse();
         chatResponse.setOk(false);
 
         try {
             Request request = Request
-                    .post("https://api.openai.com/v1/chat/completions")
+                    .post(apiPrefix + "/v1/chat/completions")
                     .setHeader("Authorization", "Bearer " + token)
                     .setHeader("accept", "text/event-stream")
                     .bodyString(JSON.toJSONString(parameter), org.apache.hc.core5.http.ContentType.APPLICATION_JSON)

@@ -32,6 +32,7 @@ public enum Command {
     SetOpenStatus("set_open_status", false),
     SetGptToken("set_gpt_token", false),
     SetConciseReplies("set_concise_replies", false),
+    SetOpenAIAPIPrefix("set_openai_api_prefix", false),
     UpdateConfig("uc", false),
     Language("language", false),
     Restart("restart", false),

@@ -2,7 +2,7 @@ package code.handler;
 
 import code.config.*;
 import code.eneity.RecordTableEntity;
-import code.handler.commandsteps.AdminCommandsHandler;
+import code.handler.commands.AdminCommands;
 import code.handler.message.InlineKeyboardButtonBuilder;
 import code.handler.message.InlineKeyboardButtonListBuilder;
 import code.handler.message.MessageHandle;
@@ -86,7 +86,7 @@ public class Handler {
             GPTTranscriptionsParameter parameter = new GPTTranscriptionsParameter();
             parameter.setModel(GPTTranscriptionsModel.Whisper_1.getModel());
             parameter.setFile(new java.io.File(mp3));
-            GPTTranscriptionsResponse response = GPTUtil.transcriptions(RequestProxyConfig.create(), token, parameter);
+            GPTTranscriptionsResponse response = GPTUtil.transcriptions(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), parameter);
             if (!response.isOk()) {
                 MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError));
                 return false;
@@ -116,7 +116,7 @@ public class Handler {
     }
 
     public static void init() {
-        AdminCommandsHandler.init();
+        AdminCommands.init();
 
         // Chat
         StepsBuilder
@@ -178,7 +178,7 @@ public class Handler {
                         token = GptTokenStore.getRandomToken();
 
                         Message finalMessage = message;
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -348,7 +348,7 @@ public class Handler {
                     for (int i = 0; i < 3; i++) {
                         token = GptTokenStore.getRandomToken();
 
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -470,7 +470,7 @@ public class Handler {
                     for (int i = 0; i < 3; i++) {
                         token = GptTokenStore.getRandomToken();
 
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -584,7 +584,7 @@ public class Handler {
                     for (int i = 0; i < 3; i++) {
                         token = GptTokenStore.getRandomToken();
 
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -696,7 +696,7 @@ public class Handler {
                     for (int i = 0; i < 3; i++) {
                         token = GptTokenStore.getRandomToken();
 
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }
@@ -781,7 +781,7 @@ public class Handler {
 
                     String token = GptTokenStore.getRandomToken();
 
-                    GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), token, parameter);
+                    GPTCreateImageResponse image = GPTUtil.createImage(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), parameter);
                     if (image.isOk()) {
                         MessageHandle.editMessage(message, I18nHandle.getText(session.getFromId(), I18nEnum.Downloading));
                         InputStream inputStream = DownloadUtil.download(RequestProxyConfig.create(), image.getData().get(0).getUrl());
@@ -850,7 +850,7 @@ public class Handler {
                     for (int i = 0; i < 3; i++) {
                         token = GptTokenStore.getRandomToken();
 
-                        response = GPTUtil.chat(RequestProxyConfig.create(), token, gptChatParameter, (content -> {
+                        response = GPTUtil.chat(RequestProxyConfig.create(), token, GlobalConfig.getOpenaiAPIPrefix(), gptChatParameter, (content -> {
                             if (GlobalConfig.getDebug()) {
                                 log.info(JSON.toJSONString(content));
                             }

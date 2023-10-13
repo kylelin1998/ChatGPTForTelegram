@@ -53,4 +53,8 @@ public class ConfigSettings {
     @ConfigField(isNotNull = false)
     private Boolean conciseReplies;
 
+    @JSONField(name = "openai_api_prefix")
+    @ConfigField(isNotNull = true)
+    private String openaiAPIPrefix;
+
 }

@@ -1,8 +1,7 @@
-package code.handler.commandsteps;
+package code.handler.commands;
 
 import code.config.*;
 import code.handler.Command;
-import code.handler.Handler;
 import code.handler.I18nHandle;
 import code.handler.StepsCenter;
 import code.handler.message.InlineKeyboardButtonBuilder;
@@ -29,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static code.Main.GlobalConfig;
 
 @Slf4j
-public class AdminCommandsHandler {
+public class AdminCommands {
 
     private static boolean isAdmin(String fromId) {
         return GlobalConfig.getBotAdminId().equals(fromId);

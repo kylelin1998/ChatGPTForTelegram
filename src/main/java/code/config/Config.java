@@ -39,7 +39,7 @@ public class Config {
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
     public static class MetaData {
-        public final static String CurrentVersion = "1.0.52";
+        public final static String CurrentVersion = "1.0.60";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
         public final static String ProcessName = "ChatGPTForTelegram-universal.jar";
@@ -113,6 +113,10 @@ public class Config {
         String gptModel = configSettings.getGptModel();
         if (StringUtils.isBlank(gptModel)) {
             configSettings.setGptModel(GPTModel.Gpt3_5Turbo.getModel());
+        }
+        String openaiAPIPrefix = configSettings.getOpenaiAPIPrefix();
+        if (StringUtils.isBlank(openaiAPIPrefix)) {
+            configSettings.setOpenaiAPIPrefix("https://api.openai.com");
         }
         return configSettings;
     }
