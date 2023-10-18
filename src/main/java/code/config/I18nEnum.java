@@ -104,7 +104,9 @@ public enum I18nEnum {
     SetConciseReplies("set_concise_replies"),
     SetOpenAIAPIPrefix("set_openai_api_prefix"),
     SetStartText("set_start_text"),
+    SetHelpText("set_help_text"),
     PleaseSendMeStartText("please_send_me_start_text"),
+    PleaseSendMeHelpText("please_send_me_help_text"),
 
     ;
 

@@ -61,4 +61,8 @@ public class ConfigSettings {
     @ConfigField(isNotNull = false)
     private String startText;
 
+    @JSONField(name = "help_text")
+    @ConfigField(isNotNull = false)
+    private String helpText;
+
 }

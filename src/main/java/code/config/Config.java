@@ -39,7 +39,7 @@ public class Config {
     private static ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
 
     public static class MetaData {
-        public final static String CurrentVersion = "1.0.60";
+        public final static String CurrentVersion = "1.0.62";
         public final static String GitOwner = "kylelin1998";
         public final static String GitRepo = "ChatGPTForTelegram";
         public final static String ProcessName = "ChatGPTForTelegram-universal.jar";

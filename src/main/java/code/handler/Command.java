@@ -34,6 +34,7 @@ public enum Command {
     SetConciseReplies("set_concise_replies", false),
     SetOpenAIAPIPrefix("set_openai_api_prefix", false),
     SetStartText("set_start_text", false),
+    SetHelpText("set_help_text", false),
     UpdateConfig("uc", false),
     Language("language", false),
     Restart("restart", false),

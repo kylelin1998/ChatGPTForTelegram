@@ -82,6 +82,7 @@ public class AdminCommands {
                             .add(InlineKeyboardButtonBuilder
                                     .create()
                                     .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetStartText), StepsCenter.buildCallbackData(true, session, Command.SetStartText, null))
+                                    .add(I18nHandle.getText(session.getFromId(), I18nEnum.SetHelpText), StepsCenter.buildCallbackData(true, session, Command.SetHelpText, null))
                                     .build()
                             )
                             .add(InlineKeyboardButtonBuilder
@@ -489,6 +490,38 @@ public class AdminCommands {
 
                     ConfigSettings config = Config.readConfig();
                     config.setStartText(text);
+                    boolean b = Config.saveConfig(config);
+                    if (b) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
+                    } else {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateFailed), false);
+                    }
+                    return StepResult.ok();
+                })
+                .build();
+
+        StepsBuilder
+                .create()
+                .bindCommand(Command.SetHelpText)
+                .debug(GlobalConfig.getDebug())
+                .error((Exception e, StepsChatSession session) -> {
+                    log.error(ExceptionUtil.getStackTraceWithCustomInfoToStr(e));
+                    MessageHandle.sendMessage(session.getChatId(), I18nHandle.getText(session.getFromId(), I18nEnum.UnknownError), false);
+                })
+                .init((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    if (!isAdmin(session.getFromId())) {
+                        MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.YouAreNotAnAdmin), false);
+                        return StepResult.end();
+                    }
+
+                    MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.PleaseSendMeHelpText), false);
+                    return StepResult.ok();
+                })
+                .steps((StepsChatSession session, int index, List<String> list, Map<String, Object> context) -> {
+                    String text = session.getText();
+
+                    ConfigSettings config = Config.readConfig();
+                    config.setHelpText(text);
                     boolean b = Config.saveConfig(config);
                     if (b) {
                         MessageHandle.sendMessage(session.getChatId(), session.getReplyToMessageId(), I18nHandle.getText(session.getFromId(), I18nEnum.UpdateSucceeded), false);
