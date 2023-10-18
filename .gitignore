@@ -40,3 +40,4 @@ mvnw
 mvnw.cmd
 
 *.imi
+/ChatGPTForTelegram-universal.jar
