@@ -99,13 +99,6 @@ Run the docker image of just then build.
 docker run --name gptft -d -v $(pwd):/app --restart=always gptft
 ```
 
-## About
-My telegram: https://t.me/KyleLin1998
-
-My telegram channel: https://t.me/KyleLin1998Channel
-
-My email: email@kylelin1998.com
-
 ## Usage
 How to use the bot's commands:
 ```
